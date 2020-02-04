@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project 
+    name="Automaton-modelling-system"
+    default="deftarget"
+    basedir="">
+
+    <property name="jarname" value="AutomatonModeller.jar"  />
+
+    <target name="compile" depends="prepare">
+ 
+    </target>
+
+    <target name="prepare">
+        <mkdir dir="classes"/>
+    </target>
+
+    <target name="compile" depends="prepare">
+        <javac srcdir="src" destdir="classes"/>
+    </target>
+
+    <target name="clean">
+        <delete>
+            <fileset dir="classes" includes="*"/>
+        </delete>
+        <delete dir="classes"/>
+    </target>
+
+    <target name="run">
+        
+    </target>
+
+
+
+</project>
