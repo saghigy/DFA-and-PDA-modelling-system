@@ -18,6 +18,5 @@ jobs:
   run:
     runs-on: [ubuntu-latest]
     steps:
-      - name: Run with Ant
       - run: ant -noinput -buildfile build.xml run
        
