@@ -70,7 +70,7 @@ public class State {
     public String toString() {
         return "{" +
             " name='" + name + "'" +
-            ", (" + x + "," +
+            ", (" + x + "" +
             ", " + y + ")" +
             ", acceptState='" + acceptState + "'" +
             ", startState='" + startState + "'" +

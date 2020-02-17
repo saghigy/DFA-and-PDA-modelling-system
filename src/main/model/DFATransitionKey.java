@@ -5,17 +5,15 @@ import java.util.Objects;
 /**
  * TransitionKey
  */
-public class TransitionKey {
+public class DFATransitionKey {
 
     private State state;
     private char letter;
 
-
-    public TransitionKey(State state, char letter) {
+    public DFATransitionKey(State state, char letter) {
         this.state = state;
         this.letter = letter;
     }
-
 
     public State getState() {
         return this.state;
@@ -29,10 +27,10 @@ public class TransitionKey {
     public boolean equals(Object o) {
         if (o == this)
             return true;
-        if (!(o instanceof TransitionKey)) {
+        if (!(o instanceof DFATransitionKey)) {
             return false;
         }
-        TransitionKey transitionKey = (TransitionKey) o;
+        DFATransitionKey transitionKey = (DFATransitionKey) o;
         return Objects.equals(state, transitionKey.state) && Objects.equals(letter, transitionKey.letter);
     }
 

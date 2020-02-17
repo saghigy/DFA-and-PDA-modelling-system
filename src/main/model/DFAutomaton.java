@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public class DFAutomaton extends BaseAutomaton {
 
-    private Map<TransitionKey,State> transitionFunction;
+    private Map<DFATransitionKey,State> transitionFunction;
 
 
     public DFAutomaton() {
@@ -17,15 +17,15 @@ public class DFAutomaton extends BaseAutomaton {
     }
 
     public void addTransition(State from,char with,State to) {
-        TransitionKey key = new TransitionKey(from, with);
+        DFATransitionKey key = new DFATransitionKey(from, with);
         transitionFunction.put(key, to);
     }
 
     @Override
     public void read(char character) {
-        State nextState = transitionFunction.get(new TransitionKey(this.currentState,character));
+        State nextState = transitionFunction.get(new DFATransitionKey(this.currentState,character));
         if(nextState == null) {
-            //Exception: 
+            //Exception: NOT SURE
         } else {
             currentState = nextState;
         }
@@ -34,16 +34,17 @@ public class DFAutomaton extends BaseAutomaton {
 
     @Override
     public String toString() {
-       String string = "States: \n";
-       for(State s : states) {
-            string +=  s.toString() + "\n";
-       }
-       string += "Trasitions: \n";
-       for (Map.Entry<TransitionKey,State> entry : transitionFunction.entrySet() ) {
-           string += entry.getKey().getState().getName() + " ---------" + entry.getKey().getLetter() + "---------> " + entry.getValue().getName() + "\n";
-       }
+        StringBuilder sb = new StringBuilder();
+        sb.append("States: \n");
+        for(State s : states) {
+            sb.append(s.toString() + "\n");
+        }
+        sb.append("Trasitions: \n");
+        for (Map.Entry<DFATransitionKey,State> entry : transitionFunction.entrySet() ) {
+           sb.append(entry.getKey().getState().getName() + " ---------" + entry.getKey().getLetter() + "---------> " + entry.getValue().getName() + "\n");
+        }
 
-       return string;
+        return sb.toString();
 
     }
     

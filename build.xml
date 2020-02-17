@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project 
-    name="Automaton-modelling-system"
-    default="deftarget"
-    basedir="">
+<project name="DFA-and-PDA-modelling-system" default="deftarget" basedir="">
 
     <property name="jarname" value="AutomatonModeller.jar"  />
 
-    <target name="compile" depends="prepare">
- 
-    </target>
+    <path id="classpath.test">
+        <pathelement location="junit-4.13.jar"/>
+      </path>
 
     <target name="prepare">
         <mkdir dir="classes"/>
