@@ -14,9 +14,10 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Ant
-      run: ant -noinput -buildfile build.xml 
+      run: ant -noinput -buildfile build.xml clean
   run:
     runs-on: [ubuntu-latest]
     steps:
-      - run: ant run
+      - name: Run with Ant
+      - run: ant -noinput -buildfile build.xml run
        
