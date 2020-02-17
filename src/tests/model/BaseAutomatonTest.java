@@ -4,21 +4,25 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import main.model.DFAutomaton;
+
+import main.model.BaseAutomaton;
 import main.model.State;
 import main.model.exceptions.StartStateAlreadyExistsException;
 import main.model.exceptions.StateAlreadyExistsException;
 import main.model.exceptions.StateNotFoundException;
 
-public class DFAutomatonTester {
-    
+/**
+ * BaseAutomatonTest
+ */
+public class BaseAutomatonTest {
+
     /**
      * Checking if the added state is start state
      */
     @Test
     public void checkStartState() {
         try {
-            DFAutomaton tester = new DFAutomaton();
+            BaseAutomaton tester = new BaseAutomaton();
             State testState = new State("Test", 1, 2.3);
             tester.addStartState(testState);
             assertTrue(tester.getStateByName("Test").isStartState());
@@ -26,14 +30,14 @@ public class DFAutomatonTester {
 
         }
     }
-    
-    /**
+
+     /**
      * Checking if addAcceptState method works
      */
     @Test
     public void checkAcceptStates() {
         try {
-            DFAutomaton tester = new DFAutomaton();
+            BaseAutomaton tester = new BaseAutomaton();
             State startState = new State("Start", 1, 1);
             State testAcceptState = new State("Accept", 2, 2);
             tester.addStartState(startState);
@@ -43,7 +47,7 @@ public class DFAutomatonTester {
            
         }
     }
-        
+
     /**
      * Checks StateAlreadyExistsException. Thrown when two state exist in an automaton with the same name.
      */
@@ -51,7 +55,7 @@ public class DFAutomatonTester {
     public void checkDoubleExistenceException()  {
         State state1 = new State("Test", 1, 2);
         State state2 = new State("Test", 1, 2);
-        DFAutomaton automaton = new DFAutomaton();
+        BaseAutomaton automaton = new BaseAutomaton();
         assertThrows(StateAlreadyExistsException.class, ()-> {
             automaton.addState(state1);
             automaton.addState(state2);
@@ -65,7 +69,7 @@ public class DFAutomatonTester {
     public void checkDoubleStartStateException() {
         State state1 = new State("Test1", 1, 2);
         State state2 = new State("Test2", 1, 2);
-        DFAutomaton automaton = new DFAutomaton();
+        BaseAutomaton automaton = new BaseAutomaton();
         assertThrows(StartStateAlreadyExistsException.class, ()-> {
             automaton.addStartState(state1);
             automaton.addStartState(state2);
@@ -79,36 +83,11 @@ public class DFAutomatonTester {
     public void checkStateNotoundException() {
         State state1 = new State("Test1", 1, 2);
         State state2 = new State("Test2", 1, 2);
-        DFAutomaton automaton = new DFAutomaton();
+        BaseAutomaton automaton = new BaseAutomaton();
         assertThrows(StateNotFoundException.class, ()-> {
             automaton.addState(state1);
             automaton.addState(state2);
             automaton.getStateByName("Test3");
         });
     }
-
-    //  DFA-tests
-
-     /**
-     * Checking if the transition goes to the right state by reading
-     */
-    @Test
-    public void checkTransition() {
-        try {
-            DFAutomaton tester = new DFAutomaton();
-            State startState = new State("Start", 1, 2.3);
-            State simpleState = new State("Simple", 2, 3);
-            tester.addStartState(startState);
-            tester.addState(simpleState);
-            tester.addTransition(startState, 'C', simpleState);
-            tester.read('C');
-            assertTrue(tester.getCurrentState() == simpleState);
-        } catch (Exception e) {
-
-        }
-    }
-
-    
-
-
 }

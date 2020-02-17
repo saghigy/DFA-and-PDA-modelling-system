@@ -8,7 +8,7 @@ import java.util.Objects;
 public class DFATransitionKey {
 
     private State state;
-    private char letter;
+    private Character letter;
 
     public DFATransitionKey(State state, char letter) {
         this.state = state;
