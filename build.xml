@@ -16,7 +16,7 @@
     </target>
 
     <target name="compile" depends="prepare">
-        <javac srcdir="src" destdir="build/classes"/>
+        <javac includes="junit-4.13.jar"  srcdir="src" destdir="build/classes"/>
     </target>
 
     <target name="clean">
