@@ -44,7 +44,7 @@ public class Main {
             System.out.println( e.getMessage());
         }
         */
-        PDAutomaton tester = new PDAutomaton();
+        PDAutomaton tester = new PDAutomaton('Z');
         State state1 = new State("A",1,2);
         State state2 = new State("B",5,3.2);
         State state3 = new State("C",6,1.1);
@@ -53,7 +53,7 @@ public class Main {
             tester.addAcceptState(state2);
             tester.addState(state3);
             tester.addTransition(state1, 'a', 'A', state2, "");
-            tester.addTransition(state1, 'a', '#', state3, "A");
+            tester.addTransition(state1, 'a', 'Z', state3, "A");
             tester.addTransition(state3, 'b', 'A', state1, "A");
             tester.read('a');
             tester.read('b');

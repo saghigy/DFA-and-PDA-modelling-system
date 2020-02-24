@@ -13,10 +13,11 @@ public class PDAutomaton extends BaseAutomaton {
     private Map<PDATransitionKey,PDATransitionValue> transitionFunction;
 
 
-    public PDAutomaton() {
+    public PDAutomaton(Character startingStackItem) {
         super();
         transitionFunction = new HashMap<>();
         stack = new Stack<>();
+        stack.add(startingStackItem);
     }
     /**
      * 
@@ -77,6 +78,4 @@ public class PDAutomaton extends BaseAutomaton {
         return this.stack;
     }
 
-    
-    
 }

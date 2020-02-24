@@ -10,7 +10,7 @@ import main.model.exceptions.StartStateAlreadyExistsException;
 import main.model.exceptions.StateAlreadyExistsException;
 import main.model.exceptions.StateNotFoundException;
 
-public class DFAutomatonTester {
+public class DFAutomatonTest {
     
     /**
      * Checking if the added state is start state
