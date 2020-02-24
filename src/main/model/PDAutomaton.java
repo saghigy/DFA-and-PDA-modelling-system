@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import main.model.exceptions.MissingStartStateException;
+
 /**
  * Represents a Pushdown Automaton
  */
@@ -34,20 +36,28 @@ public class PDAutomaton extends BaseAutomaton {
     }
 
     @Override
-    public void read(char character) {
-        
+    public void read(char character) throws MissingStartStateException {
+        if (currentState == null) {
+            throw  new MissingStartStateException();
+        }
         char stackItem = stack.empty() ? '#' : stack.pop();
-       
         PDATransitionValue value = transitionFunction.get(new PDATransitionKey(this.currentState,character,stackItem));
-        State nextState = value.getState();
-        if(nextState == null) {
+        if(value == null) {
             //Exception: NOT SURE
+            currentState = null;
         } else {
+            State nextState = value.getState();
             currentState = nextState;
             for (char item : value.getStackItems() ) {
                 this.stack.add(item);
             }
         }
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.stack.clear();
     }
 
     @Override
@@ -77,5 +87,7 @@ public class PDAutomaton extends BaseAutomaton {
     public Stack<Character> getStack() {
         return this.stack;
     }
+
+
 
 }

@@ -2,6 +2,7 @@ package main.model;
 
 import java.util.ArrayList;
 
+import main.model.exceptions.MissingStartStateException;
 import main.model.exceptions.StartStateAlreadyExistsException;
 import main.model.exceptions.StateAlreadyExistsException;
 import main.model.exceptions.StateNotFoundException;
@@ -24,9 +25,14 @@ public class BaseAutomaton implements Automaton {
     }
 
     @Override
-    public void read(char character) {
+    public void read(char character) throws MissingStartStateException {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public void reset() {
+        this.currentState = this.startState;
     }
 
     @Override

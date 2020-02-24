@@ -44,6 +44,8 @@ public class Main {
             System.out.println( e.getMessage());
         }
         */
+        
+        /*
         PDAutomaton tester = new PDAutomaton('Z');
         State state1 = new State("A",1,2);
         State state2 = new State("B",5,3.2);
@@ -63,6 +65,42 @@ public class Main {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        */
+        PDAutomaton automaton = new PDAutomaton('Z');
+        try {
+            //  Making the automaton
+            automaton.addStartState("0", 1, 2);
+            automaton.addState("1",2,3);
+            automaton.addState("2",4,7);
+            automaton.addAcceptState("3",4,2);
+            State state0 = automaton.getStateByName("0");
+            State state1 = automaton.getStateByName("1");
+            State state2 = automaton.getStateByName("2");
+            State state3 = automaton.getStateByName("3");
+            automaton.addTransition(state0, 'a', 'Z', state1, "Za");
+            automaton.addTransition(state1, 'a', 'a', state1, "aa");
+            automaton.addTransition(state1, 'b', 'a', state2, "");
+            automaton.addTransition(state2, 'b', 'a', state2, "");
+            automaton.addTransition(state2, '#', 'Z', state3, "");
+            
+
+            //  Test word: aaaabbbb (good)
+            String word = "bbbaaa#";
+            boolean errorInReading = false;
+            int i = 0;
+            while ( i < word.length() && !errorInReading) {
+                automaton.read(word.charAt(i));
+                if (automaton.getCurrentState() == null) {
+                    errorInReading = true;
+                   
+                }
+                i++;
+            }
+            
+        } catch (Exception e) {
+            System.out.println(e.getMessage()); 
+        
+        }   
     }
     
 }

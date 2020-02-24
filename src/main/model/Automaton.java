@@ -1,5 +1,6 @@
 package main.model;
 
+import main.model.exceptions.MissingStartStateException;
 import main.model.exceptions.StartStateAlreadyExistsException;
 import main.model.exceptions.StateAlreadyExistsException;
 import main.model.exceptions.StateNotFoundException;
@@ -12,9 +13,17 @@ public interface Automaton {
 
     /**
      * Read a character and modify the automaton according to the transition function
-     * @param character Character the automaton read 
+     * @param character Character the automaton read (# counts as epsilon)
+     * @throws MissingStartStateException
      */
-    public void read(char character);
+    public void read(char character) throws MissingStartStateException;
+
+    /**
+     * Resets the automaton
+     */
+    public void reset();
+        
+    
 
     /**
      * Add a state to the automat

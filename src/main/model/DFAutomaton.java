@@ -3,6 +3,8 @@ package main.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import main.model.exceptions.MissingStartStateException;
+
 /**
  * Representation of District Finite Automaton
  */
@@ -22,13 +24,21 @@ public class DFAutomaton extends BaseAutomaton {
     }
 
     @Override
-    public void read(char character) {
+    public void read(char character) throws MissingStartStateException {
+        if (currentState == null) {
+            throw  new MissingStartStateException();
+        }
         State nextState = transitionFunction.get(new DFATransitionKey(this.currentState,character));
         if(nextState == null) {
             //Exception: NOT SURE
         } else {
             currentState = nextState;
         }
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
     }
 
 
