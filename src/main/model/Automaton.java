@@ -84,6 +84,12 @@ public interface Automaton {
      */
     public State getStateByName(String name) throws StateNotFoundException;
 
+    /**
+     * Delete the state given as parameter and the transitons containing the state
+     * @param state State to delete
+     */
+    public void deleteState(State state);
+
 
  
     

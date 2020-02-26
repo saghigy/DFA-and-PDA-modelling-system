@@ -89,5 +89,18 @@ public class PDAutomaton extends BaseAutomaton {
     }
 
 
+    public Map<PDATransitionKey,PDATransitionValue> getTransitionFunction() {
+        return this.transitionFunction;
+    }
+
+    @Override
+    public void deleteState(State state) {
+        transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getValue().getState()));
+        transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getKey().getState()));
+        states.remove(state);
+    }
+
+
+
 
 }

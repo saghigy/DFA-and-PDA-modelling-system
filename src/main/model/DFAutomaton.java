@@ -12,7 +12,6 @@ public class DFAutomaton extends BaseAutomaton {
 
     private Map<DFATransitionKey,State> transitionFunction;
 
-
     public DFAutomaton() {
         super();
         transitionFunction = new HashMap<>();
@@ -41,6 +40,9 @@ public class DFAutomaton extends BaseAutomaton {
         super.reset();
     }
 
+    public Map<DFATransitionKey,State> getTransitionFunction() {
+        return this.transitionFunction;
+    }
 
     @Override
     public String toString() {
@@ -58,6 +60,12 @@ public class DFAutomaton extends BaseAutomaton {
 
     }
     
+    @Override
+    public void deleteState(State state) {
+        transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getValue()));
+        transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getKey().getState()));
+        states.remove(state);
+    }
 
 
     

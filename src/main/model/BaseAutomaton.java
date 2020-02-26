@@ -96,6 +96,13 @@ public class BaseAutomaton implements Automaton {
         throw new StateNotFoundException();
     }
 
+    @Override
+    public void deleteState(State state) {
+        
+    }
+
+
+
     public ArrayList<State> getStates() {
         return states;
     }

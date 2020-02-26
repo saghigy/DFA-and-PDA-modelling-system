@@ -1,10 +1,16 @@
 package main;
 
+import java.util.Scanner;
+
+import javax.swing.JFrame;
+
+import main.controller.AutomatonController;
 import main.model.DFAutomaton;
 import main.model.PDAutomaton;
 import main.model.State;
 import main.model.exceptions.StartStateAlreadyExistsException;
 import main.model.exceptions.StateAlreadyExistsException;
+import main.view.TempFrame;
 
 /**
  * Main
@@ -66,6 +72,7 @@ public class Main {
             System.out.println(e.getMessage());
         }
         */
+       /*
         PDAutomaton automaton = new PDAutomaton('Z');
         try {
             //  Making the automaton
@@ -100,7 +107,40 @@ public class Main {
         } catch (Exception e) {
             System.out.println(e.getMessage()); 
         
-        }   
+        }  */
+        /*
+        PDAutomaton automaton = new PDAutomaton('Z');
+        try {
+            //  Making the automaton
+            automaton.addStartState("0", 1, 2);
+            automaton.addState("1",2,3);
+            automaton.addState("2",4,7);
+            automaton.addAcceptState("3",4,2);
+            State state0 = automaton.getStateByName("0");
+            State state1 = automaton.getStateByName("1");
+            State state2 = automaton.getStateByName("2");
+            State state3 = automaton.getStateByName("3");
+            automaton.addTransition(state0, 'a', 'Z', state1, "Za");
+            automaton.addTransition(state1, 'a', 'a', state1, "aa");
+            automaton.addTransition(state1, 'b', 'a', state2, "");
+            automaton.addTransition(state2, 'b', 'a', state2, "");
+            automaton.addTransition(state2, '#', 'Z', state3, "");
+
+            //  controller test
+            AutomatonController controller = new AutomatonController();
+            controller.addNewPDAutomaton(automaton);
+            controller.addWordToRead("aaaaabbbbbbb");
+           
+            
+        } catch (Exception e) {
+            System.out.println(e.getMessage()); 
+        
+        }  
+       */
+
+       new TempFrame();
+
+
     }
     
 }
