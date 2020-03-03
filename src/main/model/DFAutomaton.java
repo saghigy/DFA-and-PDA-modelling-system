@@ -2,6 +2,8 @@ package main.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import main.model.exceptions.MissingStartStateException;
 
@@ -16,6 +18,8 @@ public class DFAutomaton extends BaseAutomaton {
         super();
         transitionFunction = new HashMap<>();
     }
+
+    
 
     public void addTransition(State from,char with,State to) {
         DFATransitionKey key = new DFATransitionKey(from, with);
@@ -66,6 +70,35 @@ public class DFAutomaton extends BaseAutomaton {
         transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getKey().getState()));
         states.remove(state);
     }
+
+    @Override
+    public String generateFileFormat() {
+        StringBuilder fileFormat = new StringBuilder();
+        fileFormat.append("#AutomatonModeller-Model\n");
+        fileFormat.append("type : DFA\n");
+        fileFormat.append("states : [\n");
+        for (int i = 0; i < states.size(); i++) {
+            fileFormat.append(State.stateToJSON(states.get(i)));
+            if(i < states.size()-1) {
+                fileFormat.append(",");
+            }
+            fileFormat.append("\n");
+        }
+        fileFormat.append("]\n");
+        fileFormat.append("transitions : [\n");
+        String transitionFunctonString = transitionFunction.entrySet()
+            .stream()
+            .map(entry -> "{ " + entry.getKey().getState().getName() + " ---------" + entry.getKey().getLetter() + "---------> " + entry.getValue().getName() + " }")
+            .collect(Collectors.joining(",\n")); 
+        fileFormat.append(transitionFunctonString);
+        fileFormat.append("\n]");
+
+
+        return fileFormat.toString();
+        
+    }
+
+    
 
 
     

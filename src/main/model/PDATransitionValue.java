@@ -19,9 +19,6 @@ public class PDATransitionValue {
         }
         this.stackItems = stackItems;
 
-        
-        
-
     }
 
     public State getState() {

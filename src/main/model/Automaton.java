@@ -90,6 +90,12 @@ public interface Automaton {
      */
     public void deleteState(State state);
 
+    /**
+     * Make string format from automaton can be writeable to file
+     * @return Filewriteable string
+     */
+    public String generateFileFormat();
+
 
  
     

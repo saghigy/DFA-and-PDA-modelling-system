@@ -12,7 +12,7 @@ import main.model.exceptions.StateNotFoundException;
  * Base of Automats with basic methods
  * @author Gyorgy Saghi
  */
-public class BaseAutomaton implements Automaton {
+public abstract class BaseAutomaton implements Automaton {
 
     protected ArrayList<State> states;
     protected State startState;
@@ -25,10 +25,8 @@ public class BaseAutomaton implements Automaton {
     }
 
     @Override
-    public void read(char character) throws MissingStartStateException {
-        // TODO Auto-generated method stub
+    public abstract void read(char character) throws MissingStartStateException;
 
-    }
 
     @Override
     public void reset() {
@@ -43,6 +41,7 @@ public class BaseAutomaton implements Automaton {
             }
         }
         states.add(state);
+        
     }
 
     @Override
@@ -89,7 +88,7 @@ public class BaseAutomaton implements Automaton {
     @Override
     public State getStateByName(String name) throws StateNotFoundException {
         for (State s : states) {
-            if(s.getName() == name ) {
+            if(s.getName().equals( name )) {
                 return s;
             }
         }
@@ -97,9 +96,7 @@ public class BaseAutomaton implements Automaton {
     }
 
     @Override
-    public void deleteState(State state) {
-        
-    }
+    public abstract void deleteState(State state);
 
 
 
@@ -109,6 +106,11 @@ public class BaseAutomaton implements Automaton {
 
     public State getCurrentState(){
         return this.currentState;
+    }
+
+    @Override
+    public String generateFileFormat() {
+        return null;
     }
 
     

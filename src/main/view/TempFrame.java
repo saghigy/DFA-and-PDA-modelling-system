@@ -5,8 +5,13 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.awt.GridLayout;
+import java.awt.CardLayout;
+import java.awt.Toolkit;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -16,6 +21,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -26,11 +32,13 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import main.controller.AutomatonController;
 import main.model.PDAutomaton;
@@ -46,6 +54,9 @@ public class TempFrame extends JFrame {
 
     private boolean regexpCorrect;
     private boolean DFAsimple;
+    private JPanel viewPanel;
+    private JPanel controllingPanel;
+    private JPanel mainPanel;
 
     public TempFrame() {
 
@@ -64,23 +75,75 @@ public class TempFrame extends JFrame {
         JMenuItem menuItemAddNewPDA = new JMenuItem("New PDA");
         JMenuItem menuItemOpenNewDFA = new JMenuItem("Open DFA");
         JMenuItem menuItemOpenNewPDA = new JMenuItem("Open PDA");
+        JMenuItem menuItemSave = new JMenuItem("Save");
+        JMenuItem menuItemSaveAs = new JMenuItem("Save As");
 
         menuItemAddNewDFA.addActionListener(actionOpenNewDFAWindow);
         menuItemAddNewPDA.addActionListener(actionOpenNewPDAWindow);
+        menuItemOpenNewDFA.addActionListener(actionOpenMakeDFAWindow);
+        menuItemOpenNewPDA.addActionListener(actionOpenMakePDAWindow);
+        menuItemSave.addActionListener(actionSave);
+        menuItemSaveAs.addActionListener(actionSaveAs);
+
+        menuItemAddNewDFA.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK));
+        menuItemAddNewPDA.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK));
+        menuItemOpenNewDFA.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK));
+        menuItemOpenNewPDA.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK));
+        menuItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
+        menuItemSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK+ ActionEvent.SHIFT_MASK));
 
         menuFile.add(menuItemAddNewDFA);
         menuFile.add(menuItemAddNewPDA);
         menuFile.addSeparator();
         menuFile.add(menuItemOpenNewDFA);
         menuFile.add(menuItemOpenNewPDA);
+        menuFile.addSeparator();
+        menuFile.add(menuItemSave);
+        menuFile.add(menuItemSaveAs);
 
         menuBar.add(menuFile);
         setJMenuBar(menuBar);
 
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
+        //main panel
+        JLabel welcomeLabel = new JLabel("Welcome");
+        
+        
+        this.getContentPane().add(welcomeLabel);
+
+        //  view panel
+        
+        
+        
         setVisible(true);
 
+    }
+
+    private void makeDFAWindow(){
+        this.getContentPane().setLayout(new GridLayout(0,2));
+        this.getContentPane().removeAll();
+        viewPanel = controller.getView();
+        controllingPanel = new JPanel();
+        JLabel controllingLabel = new JLabel("Controlling here:");
+        controllingPanel.add(controllingLabel);
+        this.getContentPane().add(viewPanel);
+        this.getContentPane().add(controllingPanel);
+        this.repaint();
+        this.revalidate();
+    }
+
+    private void makePDAWindow(){ 
+        this.getContentPane().setLayout(new GridLayout(0,2));
+        this.getContentPane().removeAll();
+        viewPanel = controller.getView();
+        controllingPanel = new JPanel();
+        JLabel controllingLabel = new JLabel("Controlling here:");
+        controllingPanel.add(controllingLabel);
+        this.getContentPane().add(viewPanel);
+        this.getContentPane().add(controllingPanel);
+        this.repaint();
+        this.revalidate();
     }
 
     private AbstractAction actionOpenNewDFAWindow = new AbstractAction() {
@@ -181,6 +244,8 @@ public class TempFrame extends JFrame {
                         dialog.dispose();
                         System.out.println(controller.getAutomaton());
 
+                        TempFrame.this.makeDFAWindow();
+
                     } else if (regexpCorrect) {
                         // majd
                     } else {
@@ -214,30 +279,30 @@ public class TempFrame extends JFrame {
             JPanel mainPanel = new JPanel();
 
             // start symbol
-            JPanel startSymbolPanel = new JPanel( new BorderLayout(8,8));
+            JPanel startSymbolPanel = new JPanel(new BorderLayout(8, 8));
 
             JLabel startSymbolLabel = new JLabel("Start symbol:", JLabel.TRAILING);
-            startSymbolPanel.add(startSymbolLabel,BorderLayout.WEST);
+            startSymbolPanel.add(startSymbolLabel, BorderLayout.WEST);
             JTextField startSymbolText = new JTextField(2);
             startSymbolText.setHorizontalAlignment(JTextField.CENTER);
             startSymbolLabel.setLabelFor(startSymbolText);
-            startSymbolPanel.add(startSymbolText,BorderLayout.EAST);
+            startSymbolPanel.add(startSymbolText, BorderLayout.EAST);
 
-           
-
-
-            //  generate button
+            // generate button
             JButton generateButton = new JButton("Generate");
             generateButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
-                    if(startSymbolText.getText().length() == 1) {
+                    if (startSymbolText.getText().length() == 1) {
                         char startSymbol = startSymbolText.getText().charAt(0);
                         controller.addNewPDAutomaton(startSymbol);
                         dialog.dispose();
                         System.out.println(controller.getAutomaton());
+
+                        TempFrame.this.makePDAWindow();
+
                     } else {
-                        JOptionPane.showMessageDialog(TempFrame.this, "Start symbol should be one character long!", "Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(TempFrame.this, "Start symbol should be one character long!",
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             });
@@ -245,13 +310,152 @@ public class TempFrame extends JFrame {
             mainPanel.add(startSymbolPanel);
             mainPanel.add(generateButton);
             dialog.add(mainPanel);
-            
+
             dialog.setVisible(true);
 
-
-
-
         }
-    } ;
+    };
+
+    private  AbstractAction actionOpenMakeDFAWindow = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                JFileChooser fileChooser = new JFileChooser();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter( "Automaton projects (.amproj)", "amproj");
+                fileChooser.setFileFilter(filter);
+                fileChooser.setDialogTitle("Open DFA");
+                int returnValue = fileChooser.showOpenDialog(TempFrame.this);
+                if (returnValue == JFileChooser.APPROVE_OPTION){
+                    String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                    controller.addNewDFAutomaton(filePath);
+                    System.out.println(controller.getAutomaton());
+
+                    TempFrame.this.makeDFAWindow();
+                    /*
+                    TempFrame.this.getContentPane().setLayout(new GridLayout(0,2));
+                    TempFrame.this.getContentPane().removeAll();
+                    viewPanel = controller.getView();
+                    controllingPanel = new JPanel();
+                    JLabel controllingLabel = new JLabel("Controlling here:");
+                    controllingPanel.add(controllingLabel);
+                    TempFrame.this.getContentPane().add(viewPanel);
+                    TempFrame.this.getContentPane().add(controllingPanel);
+                    TempFrame.this.repaint();
+                    TempFrame.this.revalidate();
+                    */
+  
+                    
+                }
+            }catch(Exception ex) {
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    };
+
+    private  AbstractAction actionOpenMakePDAWindow = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try {
+                JFileChooser fileChooser = new JFileChooser();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter( "Automaton projects (.amproj)", "amproj");
+                fileChooser.setFileFilter(filter);
+                fileChooser.setDialogTitle("Open PDA");
+                int returnValue = fileChooser.showOpenDialog(TempFrame.this);
+                if (returnValue == JFileChooser.APPROVE_OPTION){
+                    String filePath = fileChooser.getSelectedFile().getAbsolutePath();
+                    controller.addNewPDAutomaton(filePath);
+                    System.out.println(controller.getAutomaton());
+
+                    TempFrame.this.makePDAWindow();
+                }
+            }catch(Exception ex) {
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    };
+
+    private  AbstractAction actionSave = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) { 
+            try{
+                if (!controller.isSavedProject()) {
+                    JFileChooser fileChooser = new JFileChooser();
+                    FileNameExtensionFilter filter = new FileNameExtensionFilter( "Automaton projects (.amproj)", "amproj");
+                    fileChooser.setFileFilter(filter);
+                    fileChooser.setSelectedFile(new File("untitled.amproj"));
+                    fileChooser.setDialogTitle("Save As");
+                    int returnValue = fileChooser.showOpenDialog(TempFrame.this);
+                    if (returnValue == JFileChooser.APPROVE_OPTION){
+                        File filePath = fileChooser.getSelectedFile();
+                        if( filePath.exists()) {
+                            int n = JOptionPane.showConfirmDialog(
+                            TempFrame.this,
+                            "Do You Want to Overwrite File?",
+                            "Confirm Overwrite",
+                            JOptionPane.YES_NO_OPTION);
+
+                            if (n == JOptionPane.YES_OPTION) {
+                                TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
+                            }
+                        }else {
+                            TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
+                        }
+                    }
+                } else {
+                    if(TempFrame.this.controller.getLatestSave()) {
+                        TempFrame.this.controller.save();
+                    }
+
+                }
+            } catch(Exception ex) {
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    };
+
+    private  AbstractAction actionSaveAs = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) { 
+            try {
+                JFileChooser fileChooser = new JFileChooser();
+                FileNameExtensionFilter filter = new FileNameExtensionFilter( "Automaton projects (.amproj)", "amproj");
+                fileChooser.setFileFilter(filter);
+                fileChooser.setSelectedFile(new File("untitled.amproj"));
+                fileChooser.setDialogTitle("Save As");
+                int returnValue = fileChooser.showOpenDialog(TempFrame.this);
+                if (returnValue == JFileChooser.APPROVE_OPTION){
+                    File filePath = fileChooser.getSelectedFile();
+                    if( filePath.exists()) {
+                        int n = JOptionPane.showConfirmDialog(
+                        TempFrame.this,
+                        "Do You Want to Overwrite File?",
+                        "Confirm Overwrite",
+                        JOptionPane.YES_NO_OPTION);
+
+                        if (n == JOptionPane.YES_OPTION) {
+                            TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
+                        }
+                    } else {
+                        TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(),
+                                "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            
+            
+        }
+    };
+
+    
 
 }
+

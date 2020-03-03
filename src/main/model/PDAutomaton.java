@@ -2,7 +2,11 @@ package main.model;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
+import java.util.stream.Collectors;
+
+import org.json.JSONArray;
 
 import main.model.exceptions.MissingStartStateException;
 
@@ -13,10 +17,12 @@ public class PDAutomaton extends BaseAutomaton {
 
     private Stack<Character> stack;
     private Map<PDATransitionKey,PDATransitionValue> transitionFunction;
+    private Character startingStackItem;
 
 
     public PDAutomaton(Character startingStackItem) {
         super();
+        this.startingStackItem = startingStackItem;
         transitionFunction = new HashMap<>();
         stack = new Stack<>();
         stack.add(startingStackItem);
@@ -98,6 +104,34 @@ public class PDAutomaton extends BaseAutomaton {
         transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getValue().getState()));
         transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getKey().getState()));
         states.remove(state);
+    }
+
+    @Override
+    public String generateFileFormat() {
+        StringBuilder fileFormat = new StringBuilder();
+        fileFormat.append("#AutomatonModeller-Model\n");
+        fileFormat.append("type : PDA\n");
+        fileFormat.append("startSymbol : " + this.startingStackItem + "\n");
+        fileFormat.append("states : [\n");
+        for (int i = 0; i < states.size(); i++) {
+            fileFormat.append(State.stateToJSON(states.get(i)));
+            if(i < states.size()-1) {
+                fileFormat.append(",");
+            }
+            fileFormat.append("\n");
+        }
+        fileFormat.append("]\n");
+        fileFormat.append("transitions : [\n");
+
+        String transitionFunctonString = transitionFunction.entrySet()
+            .stream()
+            .map(entry -> "{ " + entry.getKey().getState().getName() + " ---------" + entry.getKey().getLetter() + " / " + entry.getKey().getStackItem() + "---------> " + entry.getValue().getState().getName() +" / " + entry.getValue().getStackItems() + " }")
+            .collect(Collectors.joining(",\n")); 
+        fileFormat.append(transitionFunctonString);
+        fileFormat.append("\n]");
+
+
+        return fileFormat.toString();
     }
 
 

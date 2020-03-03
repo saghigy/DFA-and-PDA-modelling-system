@@ -1,11 +1,20 @@
 package main.controller;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.Scanner;
+
+import main.controller.exceptions.IncorrectTypeException;
 import main.model.Automaton;
 import main.model.BaseAutomaton;
 import main.model.DFAutomaton;
 import main.model.PDAutomaton;
 import main.model.State;
 import main.model.exceptions.MissingStartStateException;
+import main.model.exceptions.StartStateAlreadyExistsException;
+import main.model.exceptions.StateAlreadyExistsException;
+import main.model.exceptions.StateNotFoundException;
 import main.view.AutomatonVisualisationPanel;
 
 /**
@@ -22,18 +31,19 @@ public class AutomatonController {
     private boolean latestSave; // change when the model is changing
 
     public AutomatonController() {
-        
+
     }
 
     public void addNewDFAutomaton() {
         automaton = new DFAutomaton();
         view = new AutomatonVisualisationPanel(automaton);
+        savedProject = false;
     }
 
     public void addNewDFAutomaton(DFAutomaton automaton) {
         this.automaton = automaton;
         view = new AutomatonVisualisationPanel(automaton);
-        savedProject = false;
+        savedProject = true;
 
     }
 
@@ -46,7 +56,115 @@ public class AutomatonController {
     public void addNewPDAutomaton(PDAutomaton automaton) {
         this.automaton = automaton;
         view = new AutomatonVisualisationPanel(automaton);
+        savedProject = true;
 
+    }
+
+    public void addNewDFAutomaton(String filePath) throws StateAlreadyExistsException, StartStateAlreadyExistsException,StateNotFoundException, FileNotFoundException,IncorrectTypeException {
+        Scanner sc = new Scanner(new File(filePath));
+        sc.nextLine();
+        String nextLine = sc.nextLine();
+        if (nextLine.contains("DFA")) {
+            DFAutomaton automaton = new DFAutomaton();
+            sc.nextLine();
+            boolean endOfStates = false;
+            while (!endOfStates) {
+                nextLine = sc.nextLine();
+                if (nextLine.contains("]")) {
+                    endOfStates = true;
+                } else {
+                    State state = State.JSONtoState(nextLine);
+                    if ( state.isStartState()) {
+                        automaton.addStartState(state);
+                    } else {
+                        automaton.addState(state);
+                    }
+                }
+            }
+            sc.nextLine();
+            boolean endOfTransitions = false;
+            while (!endOfTransitions) {
+                nextLine = sc.nextLine();
+                if (nextLine.contains("]")) {
+                    endOfTransitions = true;
+                } else {
+                    nextLine = nextLine.replace(" ", "");
+                    nextLine = nextLine.replace("{", "");
+                    nextLine = nextLine.replace("}", "");
+                    nextLine = nextLine.replace("--------->", "-");
+                    nextLine = nextLine.replace("---------", "-");
+                    String[] lines = nextLine.split("-");
+                    
+                    State from = automaton.getStateByName(lines[0]);
+                    char with =  lines[1].charAt(0);
+                    State to = automaton.getStateByName(lines[2]);
+                    automaton.addTransition(from, with, to);
+                }
+            }
+            addNewDFAutomaton(automaton);
+        } else {
+            throw new IncorrectTypeException();
+        }
+        
+        
+    }
+
+    public void addNewPDAutomaton(String filePath) throws StateAlreadyExistsException, StartStateAlreadyExistsException, StateNotFoundException,FileNotFoundException,IncorrectTypeException {
+        Scanner sc = new Scanner(new File(filePath));
+        sc.nextLine();
+        String nextLine = sc.nextLine();
+        if (nextLine.contains("PDA")) {
+            char symbol = sc.nextLine().replace(" ", "").replace("startSymbol:", "").charAt(0);
+            PDAutomaton automaton = new PDAutomaton(symbol);
+            sc.nextLine();
+            boolean endOfStates = false;
+            while (!endOfStates) {
+                nextLine = sc.nextLine();
+                if (nextLine.contains("]")) {
+                    endOfStates = true;
+                } else {
+                    State state = State.JSONtoState(nextLine);
+                    if ( state.isStartState()) {
+                        automaton.addStartState(state);
+                    } else {
+                        automaton.addState(state);
+                    }
+                }
+            }
+            sc.nextLine();
+            
+            boolean endOfTransitions = false;
+            while (!endOfTransitions) {
+                
+                nextLine = sc.nextLine();
+                if (nextLine.equals("]")) {
+                    endOfTransitions = true;
+                } else {
+                    nextLine = nextLine.replace(" ", "");
+                    nextLine = nextLine.replace("{", "");
+                    nextLine = nextLine.replace("}", "");
+                    nextLine = nextLine.replace("--------->", "-");
+                    nextLine = nextLine.replace("---------", "-");
+                    nextLine = nextLine.replace("/","-");
+                    String[] lines = nextLine.split("-");
+                    
+                    State from = automaton.getStateByName(lines[0]);
+                    char with =  lines[1].charAt(0);
+                    char stackItem = lines[2].charAt(0);
+                    State to = automaton.getStateByName(lines[3]);
+                    String stackString = lines[4].replace(",", "");
+                    stackString = stackString.replace(" ", "");
+                    stackString = stackString.replace("[", "");
+                    stackString = stackString.replace("]", "");
+                    automaton.addTransition(from, with, stackItem, to, stackString);
+                }
+            }
+            addNewPDAutomaton(automaton);
+        } else {
+            throw new IncorrectTypeException();
+        }
+        
+        
     }
 
     public void addWordToRead(String word) {
@@ -95,12 +213,17 @@ public class AutomatonController {
         return this.view;
     }
 
-    public void save() {
-        //TODO: check if the file in path exists if exists: save the new version in it else make the file and save the new version
+    public void save() throws FileNotFoundException {
+        PrintWriter pw = new PrintWriter(new File(filePath));
+        pw.print(automaton.generateFileFormat());
+        pw.flush();
+        this.savedProject = true;
+        this.latestSave = true;
+        
 
     }
 
-    public void saveAs(String path) {
+    public void saveAs(String path) throws FileNotFoundException {
         this.filePath = path;
         this.save();
         this.savedProject = true;
@@ -108,5 +231,38 @@ public class AutomatonController {
         
     }
 
+     public void drawView() {
+        this.view.repaint();
+     }
 
+
+    public String getWordToRead() {
+        return this.wordToRead;
+    }
+
+    public int getIndexOfCurrentChar() {
+        return this.indexOfCurrentChar;
+    }
+
+    public String getFilePath() {
+        return this.filePath;
+    }
+
+    public boolean getSavedProject() {
+        return this.savedProject;
+    }
+
+    public boolean isSavedProject() {
+        return this.savedProject;
+    }
+
+    public boolean getLatestSave() {
+        return this.latestSave;
+    }
+
+    public boolean isLatestSave() {
+        return this.latestSave;
+    }
+
+    
 }

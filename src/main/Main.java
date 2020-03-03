@@ -126,17 +126,37 @@ public class Main {
             automaton.addTransition(state2, 'b', 'a', state2, "");
             automaton.addTransition(state2, '#', 'Z', state3, "");
 
-            //  controller test
-            AutomatonController controller = new AutomatonController();
-            controller.addNewPDAutomaton(automaton);
-            controller.addWordToRead("aaaaabbbbbbb");
+            System.out.println(automaton.generateFileFormat());
+          
+
            
             
         } catch (Exception e) {
             System.out.println(e.getMessage()); 
         
-        }  
-       */
+        }  */
+        
+        /*
+        DFAutomaton tester = new DFAutomaton();
+        State startState = new State("Start", 1, 2.3);
+        State simpleState = new State("Simple", 2, 3);
+        try {
+            tester.addStartState(startState);
+            tester.addState(simpleState);
+            tester.addTransition(startState, 'C', simpleState);
+            
+
+            System.out.println(tester);
+            AutomatonController controller = new AutomatonController();
+            System.out.println(tester.generateFileFormat());
+        } catch (Exception e) {
+            
+            e.printStackTrace();
+        } 
+        */
+        
+        
+       
 
        new TempFrame();
 
