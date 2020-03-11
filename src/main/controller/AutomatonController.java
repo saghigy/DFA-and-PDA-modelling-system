@@ -29,6 +29,8 @@ public class AutomatonController {
     private String filePath;
     private boolean savedProject;
     private boolean latestSave; // change when the model is changing
+    private double radiusOfStates = 20; // change later in settings
+    private boolean isDFA;
 
     public AutomatonController() {
 
@@ -36,27 +38,31 @@ public class AutomatonController {
 
     public void addNewDFAutomaton() {
         automaton = new DFAutomaton();
-        view = new AutomatonVisualisationPanel(automaton);
+        view = new AutomatonVisualisationPanel(automaton,radiusOfStates);
         savedProject = false;
+        isDFA = true;
     }
 
     public void addNewDFAutomaton(DFAutomaton automaton) {
         this.automaton = automaton;
-        view = new AutomatonVisualisationPanel(automaton);
+        view = new AutomatonVisualisationPanel(automaton,radiusOfStates);
         savedProject = true;
+        isDFA = true;
 
     }
 
     public void addNewPDAutomaton(char startingStackItem) {
         automaton = new PDAutomaton(startingStackItem);
-        view = new AutomatonVisualisationPanel(automaton);
+        view = new AutomatonVisualisationPanel(automaton,radiusOfStates);
         savedProject = false;
+        isDFA = false;
     }
 
     public void addNewPDAutomaton(PDAutomaton automaton) {
         this.automaton = automaton;
-        view = new AutomatonVisualisationPanel(automaton);
+        view = new AutomatonVisualisationPanel(automaton,radiusOfStates);
         savedProject = true;
+        isDFA = false;
 
     }
 
@@ -139,7 +145,7 @@ public class AutomatonController {
                 nextLine = sc.nextLine();
                 if (nextLine.equals("]")) {
                     endOfTransitions = true;
-                } else {
+                } else if (!nextLine.equals("")){
                     nextLine = nextLine.replace(" ", "");
                     nextLine = nextLine.replace("{", "");
                     nextLine = nextLine.replace("}", "");
@@ -231,6 +237,57 @@ public class AutomatonController {
         
     }
 
+    public State stateNear(double x, double y) {
+        for (State state : automaton.getStates()) {
+            if( Math.pow(state.getX() - x,2) + Math.pow(state.getY() - y,2) < radiusOfStates * radiusOfStates )  {
+                return state;
+            }
+        }
+        return null;
+    }
+
+    public boolean canMakeState(double x, double y) {
+        boolean intersectOtherState = false;
+        int i = 0;
+        while( i <automaton.getStates().size() && !intersectOtherState) {
+            State state = automaton.getStates().get(i);
+            if( Math.pow((state.getX() - x),2) + Math.pow((state.getY() - y), 2) < 4*radiusOfStates*radiusOfStates) {
+                intersectOtherState = true;
+            }
+            i++;
+        }
+        return !intersectOtherState;
+    }
+
+    public void addState(String name,double x, double y) throws StateAlreadyExistsException {
+        automaton.addState(name,x,y);
+    }
+
+    public void addStartState(String name, double x , double y) throws StateAlreadyExistsException, StartStateAlreadyExistsException {
+        automaton.addStartState(name,x,y);
+    }
+
+    public void addAcceptState(String name,double x, double y) throws StateAlreadyExistsException {
+        automaton.addAcceptState(name,x,y);
+    }
+
+    public void makePDATransition(State from, char with, char stackItem, State to, String stackString)  {
+        PDAutomaton automaton = (PDAutomaton)this.automaton;
+        automaton.addTransition(from, with, stackItem, to, stackString);
+    }
+
+    public void makeDFATransition(State from, char with, State to)  {
+        DFAutomaton automaton = (DFAutomaton)this.automaton;
+        automaton.addTransition(from, with, to);
+    }
+
+    public void changePosition(State state,double x, double y) throws StateNotFoundException {
+        State automatonState = automaton.getStateByName(state.getName());
+        automatonState.setNewPosition(x, y);
+    }
+
+    
+
      public void drawView() {
         this.view.repaint();
      }
@@ -248,21 +305,26 @@ public class AutomatonController {
         return this.filePath;
     }
 
-    public boolean getSavedProject() {
-        return this.savedProject;
-    }
 
     public boolean isSavedProject() {
         return this.savedProject;
     }
 
-    public boolean getLatestSave() {
-        return this.latestSave;
-    }
 
     public boolean isLatestSave() {
         return this.latestSave;
     }
+
+
+    public double getRadiusOfStates() {
+        return this.radiusOfStates;
+    }
+
+
+    public boolean isDFA() {
+        return this.isDFA;
+    }
+    
 
     
 }

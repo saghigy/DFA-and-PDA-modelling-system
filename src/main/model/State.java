@@ -61,6 +61,11 @@ public class State {
         return this.acceptState;
     }
 
+    public void setNewPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == this)
@@ -76,6 +81,7 @@ public class State {
     public int hashCode() {
         return Objects.hash(name, x, y, acceptState, startState);
     }
+    
 
 
     @Override

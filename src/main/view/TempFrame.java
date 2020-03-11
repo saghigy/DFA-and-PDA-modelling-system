@@ -1,22 +1,33 @@
 package main.view;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
+import java.util.Random;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.awt.GridLayout;
+import java.awt.HeadlessException;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Toolkit;
+import java.awt.MouseInfo;
+import java.awt.color.*;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
+import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -29,11 +40,14 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.DocumentEvent;
@@ -44,6 +58,9 @@ import main.controller.AutomatonController;
 import main.model.PDAutomaton;
 import main.model.State;
 import main.model.exceptions.MissingStartStateException;
+import main.model.exceptions.StartStateAlreadyExistsException;
+import main.model.exceptions.StateAlreadyExistsException;
+import main.model.exceptions.StateNotFoundException;
 
 /**
  * TempFrame
@@ -57,6 +74,15 @@ public class TempFrame extends JFrame {
     private JPanel viewPanel;
     private JPanel controllingPanel;
     private JPanel mainPanel;
+    private double clickPositionX;
+    private double clickPositionY;
+    private JPopupMenu emptySpacePopupMenu;
+    private JPopupMenu statePopupMenu;
+    private State clickedState;
+    private State movableState;
+    private boolean transitionMaking;
+    volatile private boolean mouseDown = false;
+    volatile private boolean isRunning = false;
 
     public TempFrame() {
 
@@ -78,6 +104,7 @@ public class TempFrame extends JFrame {
         JMenuItem menuItemSave = new JMenuItem("Save");
         JMenuItem menuItemSaveAs = new JMenuItem("Save As");
 
+        //  actions
         menuItemAddNewDFA.addActionListener(actionOpenNewDFAWindow);
         menuItemAddNewPDA.addActionListener(actionOpenNewPDAWindow);
         menuItemOpenNewDFA.addActionListener(actionOpenMakeDFAWindow);
@@ -85,12 +112,13 @@ public class TempFrame extends JFrame {
         menuItemSave.addActionListener(actionSave);
         menuItemSaveAs.addActionListener(actionSaveAs);
 
-        menuItemAddNewDFA.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK));
-        menuItemAddNewPDA.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK));
-        menuItemOpenNewDFA.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK));
+        //  accelerators
+        menuItemAddNewDFA .setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK));
+        menuItemAddNewPDA .setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK + ActionEvent.ALT_MASK));
+        menuItemOpenNewDFA .setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK));
         menuItemOpenNewPDA.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK));
         menuItemSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
-        menuItemSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK+ ActionEvent.SHIFT_MASK));
+        menuItemSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.CTRL_MASK + ActionEvent.SHIFT_MASK));
 
         menuFile.add(menuItemAddNewDFA);
         menuFile.add(menuItemAddNewPDA);
@@ -106,44 +134,181 @@ public class TempFrame extends JFrame {
 
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-        //main panel
+        // main panel
         JLabel welcomeLabel = new JLabel("Welcome");
-        
-        
-        this.getContentPane().add(welcomeLabel);
 
-        //  view panel
-        
-        
-        
+        this.getContentPane().add(welcomeLabel);
+        transitionMaking = false;
+
+        // view panel
+
         setVisible(true);
 
     }
 
-    private void makeDFAWindow(){
-        this.getContentPane().setLayout(new GridLayout(0,2));
+ 
+
+    private void makeWindow(boolean isDFA) {
+       
+        
+        this.getContentPane().setLayout(new BorderLayout());
         this.getContentPane().removeAll();
-        viewPanel = controller.getView();
+
+        // making view panel
+        viewPanel = controller.getView();// new JPanel();
+        // making popup menu
+
+        // popup menu for clicking an empty space
+        emptySpacePopupMenu = new JPopupMenu();
+        JMenuItem simpleStateAdder = new JMenuItem("Add simple state");
+        JMenuItem startStateAdder = new JMenuItem("Add start state");
+        JMenuItem acceptStateAdder = new JMenuItem("Add accept state");
+
+        // adding actions
+        simpleStateAdder.addActionListener(actionMakeState);
+        startStateAdder.addActionListener(actionMakeStartState);
+        acceptStateAdder.addActionListener(actionMakeAcceptState);
+
+        // adding to menu
+        emptySpacePopupMenu.add(simpleStateAdder);
+        emptySpacePopupMenu.add(startStateAdder);
+        emptySpacePopupMenu.add(acceptStateAdder);
+
+        // popup menu for clicking on a state
+        statePopupMenu = new JPopupMenu();
+        JMenuItem transitionAdder = new JMenuItem("Add transition");
+        JMenuItem acceptStateSetter = new JMenuItem("Set to accept state");
+        JMenuItem startStateSetter = new JMenuItem("Set to start state");
+
+        // adding actions
+        acceptStateSetter.addActionListener(actionSetToAcceptState);
+      
+        transitionAdder.addActionListener(actionMakeTransition);
+
+        // adding to menu
+        statePopupMenu.add(transitionAdder);
+        statePopupMenu.add(acceptStateSetter);
+        statePopupMenu.add(startStateSetter);
+
+        viewPanel.addMouseListener(new MouseListener() {
+
+            @Override
+            public void mouseClicked(MouseEvent me) {
+                int x = me.getX();
+                int y = me.getY();
+                TempFrame.this.clickPositionX = x;
+                TempFrame.this.clickPositionY = y;
+
+                State stateNear = controller.stateNear(x, y);
+                if (!transitionMaking) {
+                    if (SwingUtilities.isRightMouseButton(me)) {
+                        // no state in clicked area
+                        if (stateNear == null) {
+                            emptySpacePopupMenu.show(me.getComponent(), x, y);
+                        } else {
+                            clickedState = stateNear;
+                            statePopupMenu.show(me.getComponent(), x, y);
+                        }
+                    }
+                } else {
+                    //  check needed
+                    if(controller.isDFA()) {
+                        String name = JOptionPane.showInputDialog("Transition:");
+                        char with = name.charAt(0);
+                        controller.makeDFATransition(clickedState, with, stateNear);
+                        getContentPane().repaint();
+                    } 
+                    else {
+                        // addig transition
+                        String name = JOptionPane.showInputDialog("Transition:");
+                        String[] items = name.split("->");
+                        String[] value = items[0].split("/");
+                        char with = value[0].charAt(0);
+                        char stackItem = value[1].charAt(0);
+                        String stackString = items[1];
+                        controller.makePDATransition(clickedState, with, stackItem, stateNear, stackString);
+                        getContentPane().repaint();
+                    }
+                    
+                    transitionMaking = false;
+                }
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+                int x = me.getX();
+                int y = me.getY();
+                TempFrame.this.clickPositionX = x;
+                TempFrame.this.clickPositionY = y;
+                State stateNear = controller.stateNear(x, y);
+                if (SwingUtilities.isLeftMouseButton(me) && stateNear != null && !transitionMaking) {
+                    mouseDown = true;
+                    initThread(stateNear);
+                }
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent me) {
+                mouseDown = false;
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
+
+        // viewPanel = controller.getView();
         controllingPanel = new JPanel();
         JLabel controllingLabel = new JLabel("Controlling here:");
+        controllingPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         controllingPanel.add(controllingLabel);
+        controllingPanel.setPreferredSize(new Dimension(300, 400));
+        
+        
+    
         this.getContentPane().add(viewPanel);
-        this.getContentPane().add(controllingPanel);
+        this.getContentPane().add(controllingPanel,BorderLayout.EAST);
+
         this.repaint();
         this.revalidate();
     }
 
-    private void makePDAWindow(){ 
-        this.getContentPane().setLayout(new GridLayout(0,2));
-        this.getContentPane().removeAll();
-        viewPanel = controller.getView();
-        controllingPanel = new JPanel();
-        JLabel controllingLabel = new JLabel("Controlling here:");
-        controllingPanel.add(controllingLabel);
-        this.getContentPane().add(viewPanel);
-        this.getContentPane().add(controllingPanel);
-        this.repaint();
-        this.revalidate();
+    private synchronized boolean checkAndMark() {
+        if (isRunning)
+            return false;
+        isRunning = true;
+        return true;
+    }
+
+    private void initThread(State state) {
+        if (checkAndMark()) {
+            new Thread() {
+                public void run() {
+                    do {
+                       
+                        try {
+                            controller.changePosition(state, MouseInfo.getPointerInfo().getLocation().getX(), MouseInfo.getPointerInfo().getLocation().getY());
+                            getContentPane().repaint();
+                        } catch (Exception e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    } while (mouseDown);
+                    isRunning = false;
+                }
+            }.start();
+        }
     }
 
     private AbstractAction actionOpenNewDFAWindow = new AbstractAction() {
@@ -244,7 +409,7 @@ public class TempFrame extends JFrame {
                         dialog.dispose();
                         System.out.println(controller.getAutomaton());
 
-                        TempFrame.this.makeDFAWindow();
+                        TempFrame.this.makeWindow(true);
 
                     } else if (regexpCorrect) {
                         // majd
@@ -298,7 +463,7 @@ public class TempFrame extends JFrame {
                         dialog.dispose();
                         System.out.println(controller.getAutomaton());
 
-                        TempFrame.this.makePDAWindow();
+                        TempFrame.this.makeWindow(false);
 
                     } else {
                         JOptionPane.showMessageDialog(TempFrame.this, "Start symbol should be one character long!",
@@ -316,128 +481,117 @@ public class TempFrame extends JFrame {
         }
     };
 
-    private  AbstractAction actionOpenMakeDFAWindow = new AbstractAction() {
+    private AbstractAction actionOpenMakeDFAWindow = new AbstractAction() {
 
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 JFileChooser fileChooser = new JFileChooser();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter( "Automaton projects (.amproj)", "amproj");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton projects (.amproj)", "amproj");
                 fileChooser.setFileFilter(filter);
                 fileChooser.setDialogTitle("Open DFA");
                 int returnValue = fileChooser.showOpenDialog(TempFrame.this);
-                if (returnValue == JFileChooser.APPROVE_OPTION){
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
                     String filePath = fileChooser.getSelectedFile().getAbsolutePath();
                     controller.addNewDFAutomaton(filePath);
                     System.out.println(controller.getAutomaton());
 
-                    TempFrame.this.makeDFAWindow();
+                    TempFrame.this.makeWindow(true);
                     /*
-                    TempFrame.this.getContentPane().setLayout(new GridLayout(0,2));
-                    TempFrame.this.getContentPane().removeAll();
-                    viewPanel = controller.getView();
-                    controllingPanel = new JPanel();
-                    JLabel controllingLabel = new JLabel("Controlling here:");
-                    controllingPanel.add(controllingLabel);
-                    TempFrame.this.getContentPane().add(viewPanel);
-                    TempFrame.this.getContentPane().add(controllingPanel);
-                    TempFrame.this.repaint();
-                    TempFrame.this.revalidate();
-                    */
-  
-                    
+                     * TempFrame.this.getContentPane().setLayout(new GridLayout(0,2));
+                     * TempFrame.this.getContentPane().removeAll(); viewPanel =
+                     * controller.getView(); controllingPanel = new JPanel(); JLabel
+                     * controllingLabel = new JLabel("Controlling here:");
+                     * controllingPanel.add(controllingLabel);
+                     * TempFrame.this.getContentPane().add(viewPanel);
+                     * TempFrame.this.getContentPane().add(controllingPanel);
+                     * TempFrame.this.repaint(); TempFrame.this.revalidate();
+                     */
+
                 }
-            }catch(Exception ex) {
-                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     };
 
-    private  AbstractAction actionOpenMakePDAWindow = new AbstractAction() {
+    private AbstractAction actionOpenMakePDAWindow = new AbstractAction() {
 
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
                 JFileChooser fileChooser = new JFileChooser();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter( "Automaton projects (.amproj)", "amproj");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton projects (.amproj)", "amproj");
                 fileChooser.setFileFilter(filter);
                 fileChooser.setDialogTitle("Open PDA");
                 int returnValue = fileChooser.showOpenDialog(TempFrame.this);
-                if (returnValue == JFileChooser.APPROVE_OPTION){
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
                     String filePath = fileChooser.getSelectedFile().getAbsolutePath();
                     controller.addNewPDAutomaton(filePath);
                     System.out.println(controller.getAutomaton());
 
-                    TempFrame.this.makePDAWindow();
+                    TempFrame.this.makeWindow(false);
                 }
-            }catch(Exception ex) {
-                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     };
 
-    private  AbstractAction actionSave = new AbstractAction() {
+    private AbstractAction actionSave = new AbstractAction() {
 
         @Override
-        public void actionPerformed(ActionEvent e) { 
-            try{
+        public void actionPerformed(ActionEvent e) {
+            try {
                 if (!controller.isSavedProject()) {
                     JFileChooser fileChooser = new JFileChooser();
-                    FileNameExtensionFilter filter = new FileNameExtensionFilter( "Automaton projects (.amproj)", "amproj");
+                    FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton projects (.amproj)",
+                            "amproj");
                     fileChooser.setFileFilter(filter);
                     fileChooser.setSelectedFile(new File("untitled.amproj"));
                     fileChooser.setDialogTitle("Save As");
                     int returnValue = fileChooser.showOpenDialog(TempFrame.this);
-                    if (returnValue == JFileChooser.APPROVE_OPTION){
+                    if (returnValue == JFileChooser.APPROVE_OPTION) {
                         File filePath = fileChooser.getSelectedFile();
-                        if( filePath.exists()) {
-                            int n = JOptionPane.showConfirmDialog(
-                            TempFrame.this,
-                            "Do You Want to Overwrite File?",
-                            "Confirm Overwrite",
-                            JOptionPane.YES_NO_OPTION);
+                        if (filePath.exists()) {
+                            int n = JOptionPane.showConfirmDialog(TempFrame.this, "Do You Want to Overwrite File?",
+                                    "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
 
                             if (n == JOptionPane.YES_OPTION) {
                                 TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
                             }
-                        }else {
+                        } else {
                             TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
                         }
                     }
                 } else {
-                    if(TempFrame.this.controller.getLatestSave()) {
+                    if (TempFrame.this.controller.isLatestSave()) {
                         TempFrame.this.controller.save();
                     }
 
                 }
-            } catch(Exception ex) {
-                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     };
 
-    private  AbstractAction actionSaveAs = new AbstractAction() {
+    private AbstractAction actionSaveAs = new AbstractAction() {
 
         @Override
-        public void actionPerformed(ActionEvent e) { 
+        public void actionPerformed(ActionEvent e) {
             try {
                 JFileChooser fileChooser = new JFileChooser();
-                FileNameExtensionFilter filter = new FileNameExtensionFilter( "Automaton projects (.amproj)", "amproj");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton projects (.amproj)", "amproj");
                 fileChooser.setFileFilter(filter);
                 fileChooser.setSelectedFile(new File("untitled.amproj"));
                 fileChooser.setDialogTitle("Save As");
                 int returnValue = fileChooser.showOpenDialog(TempFrame.this);
-                if (returnValue == JFileChooser.APPROVE_OPTION){
+                if (returnValue == JFileChooser.APPROVE_OPTION) {
                     File filePath = fileChooser.getSelectedFile();
-                    if( filePath.exists()) {
-                        int n = JOptionPane.showConfirmDialog(
-                        TempFrame.this,
-                        "Do You Want to Overwrite File?",
-                        "Confirm Overwrite",
-                        JOptionPane.YES_NO_OPTION);
+                    if (filePath.exists()) {
+                        int n = JOptionPane.showConfirmDialog(TempFrame.this, "Do You Want to Overwrite File?",
+                                "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
 
                         if (n == JOptionPane.YES_OPTION) {
                             TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
@@ -447,13 +601,104 @@ public class TempFrame extends JFrame {
                     }
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(),
-                                "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
-            
-            
+
         }
     };
+
+    private AbstractAction actionMakeState = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // circle in circle : (x-x0)^2 + (y-y0)^2 < 4r^2
+            double x = TempFrame.this.clickPositionX;
+            double y = TempFrame.this.clickPositionY;
+            if (controller.canMakeState(x, y)) {
+                // add state
+                try { 
+                    // TODO: adding state
+                    // draw tmp circle->get name
+                    String name = JOptionPane.showInputDialog("Name:");
+                    controller.addState(name, x, y);  
+                    getContentPane().repaint();        
+                    //draw 
+                } catch (StateAlreadyExistsException e1) {
+                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }  
+            }
+        }
+    };
+
+    private AbstractAction actionMakeAcceptState = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // circle in circle : (x-x0)^2 + (y-y0)^2 < 4r^2
+            double x = TempFrame.this.clickPositionX;
+            double y = TempFrame.this.clickPositionY;
+            if (controller.canMakeState(x, y)) {
+                // add state
+                try { 
+                    // TODO: adding state
+                    // draw tmp circle->get name
+                    String name = JOptionPane.showInputDialog("Name:");
+                    controller.addAcceptState(name, x, y);  
+                    getContentPane().repaint();        
+                    //draw 
+                } catch (StateAlreadyExistsException e1) {
+                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }  
+            }
+        }
+    };
+
+    private AbstractAction actionMakeStartState = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            // circle in circle : (x-x0)^2 + (y-y0)^2 < 4r^2
+            double x = TempFrame.this.clickPositionX;
+            double y = TempFrame.this.clickPositionY;
+            if (controller.canMakeState(x, y)) {
+                // add state
+                try { 
+                    // TODO: adding state
+                    // draw tmp circle->get name
+                    String name = JOptionPane.showInputDialog("Name:");
+                    controller.addStartState(name, x, y);  
+                    getContentPane().repaint();        
+                    //draw 
+                } catch (StateAlreadyExistsException e1) {
+                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }  catch (StartStateAlreadyExistsException e2) {
+                    JOptionPane.showMessageDialog(TempFrame.this, e2.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } else {
+                JOptionPane.showMessageDialog(TempFrame.this, "States can't interect each other!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    };
+    
+    private AbstractAction actionSetToAcceptState = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            clickedState.setAccepState(true);
+            getContentPane().repaint();
+            System.out.println(controller.getAutomaton());
+        }
+    };
+
+    private AbstractAction actionMakeTransition= new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) { 
+            transitionMaking = true;
+        }
+    };
+
+    
 
     
 
