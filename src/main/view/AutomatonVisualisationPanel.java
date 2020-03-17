@@ -11,6 +11,7 @@ import main.model.PDAutomaton;
 import main.model.State;
 import main.model.DFATransitionKey;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.geom.Ellipse2D;
 import java.util.Map;
@@ -35,6 +36,11 @@ public class AutomatonVisualisationPanel extends JPanel {
     public void paintComponent(Graphics g) {
         Graphics2D g2d = (Graphics2D) g;
         for (State state : automaton.getStates()) {
+            if(state.equals(automaton.getCurrentState())) {
+                g2d.setColor(Color.red);
+            } else {
+                g2d.setColor(Color.black);
+            }
             Ellipse2D.Double circle = new Ellipse2D.Double(state.getX() - radius, state.getY() - radius, radius*2, radius*2);
             g2d.drawString(state.getName(),(int)state.getX(), (int)state.getY() );
             g2d.draw(circle);
@@ -44,6 +50,7 @@ public class AutomatonVisualisationPanel extends JPanel {
             }
 
         }
+        g2d.setColor(Color.black);
         if (automaton instanceof DFAutomaton) {
             DFAutomaton currentAutomaton = (DFAutomaton) automaton;
             for (Map.Entry<DFATransitionKey, State> entry : currentAutomaton.getTransitionFunction().entrySet()) {

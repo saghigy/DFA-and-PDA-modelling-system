@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 
+import main.model.exceptions.KeyFromStateAlreadyExistsException;
 import main.model.exceptions.MissingStartStateException;
 
 /**
@@ -27,15 +28,25 @@ public class PDAutomaton extends BaseAutomaton {
         stack = new Stack<>();
         stack.add(startingStackItem);
     }
+    
     /**
      * 
      * @param from
      * @param with
-     * @param stackItem '#'' means the end of the stack 
-     * @param to 
-     * @param stackString A string containing charachters that should be pushed into the stack. Items are pushed into the stack one by one per each character.
+     * @param stackItem   '#'' means the end of the stack
+     * @param to
+     * @param stackString A string containing charachters that should be pushed into
+     *                    the stack. Items are pushed into the stack one by one per
+     *                    each character.
+     * @throws KeyFromStateAlreadyExistsException
      */
-    public void addTransition(State from,char with,char stackItem,State to,String stackString) {
+    public void addTransition(State from, char with, char stackItem, State to, String stackString)
+            throws KeyFromStateAlreadyExistsException {
+        for (Map.Entry<PDATransitionKey,PDATransitionValue> entry : transitionFunction.entrySet() ) {
+            if (entry.getKey().getState().equals(from) && entry.getKey().getLetter() == with ){
+                throw new KeyFromStateAlreadyExistsException(from, with);
+            }
+        }
         PDATransitionKey transitionKey = new PDATransitionKey(from,with,stackItem);
         PDATransitionValue transitionValue = new PDATransitionValue(to,stackString);
         transitionFunction.put(transitionKey, transitionValue);

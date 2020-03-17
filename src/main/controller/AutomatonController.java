@@ -11,6 +11,7 @@ import main.model.BaseAutomaton;
 import main.model.DFAutomaton;
 import main.model.PDAutomaton;
 import main.model.State;
+import main.model.exceptions.KeyFromStateAlreadyExistsException;
 import main.model.exceptions.MissingStartStateException;
 import main.model.exceptions.StartStateAlreadyExistsException;
 import main.model.exceptions.StateAlreadyExistsException;
@@ -38,36 +39,44 @@ public class AutomatonController {
 
     public void addNewDFAutomaton() {
         automaton = new DFAutomaton();
-        view = new AutomatonVisualisationPanel(automaton,radiusOfStates);
+        view = new AutomatonVisualisationPanel(automaton, radiusOfStates);
         savedProject = false;
         isDFA = true;
+       
     }
 
     public void addNewDFAutomaton(DFAutomaton automaton) {
         this.automaton = automaton;
-        view = new AutomatonVisualisationPanel(automaton,radiusOfStates);
+        view = new AutomatonVisualisationPanel(automaton, radiusOfStates);
         savedProject = true;
         isDFA = true;
+        this.latestSave = true;
+       
 
     }
 
     public void addNewPDAutomaton(char startingStackItem) {
         automaton = new PDAutomaton(startingStackItem);
-        view = new AutomatonVisualisationPanel(automaton,radiusOfStates);
+        view = new AutomatonVisualisationPanel(automaton, radiusOfStates);
         savedProject = false;
         isDFA = false;
+        
     }
 
     public void addNewPDAutomaton(PDAutomaton automaton) {
         this.automaton = automaton;
-        view = new AutomatonVisualisationPanel(automaton,radiusOfStates);
+        view = new AutomatonVisualisationPanel(automaton, radiusOfStates);
         savedProject = true;
         isDFA = false;
+        this.latestSave = true;
+        
 
     }
 
-    public void addNewDFAutomaton(String filePath) throws StateAlreadyExistsException, StartStateAlreadyExistsException,StateNotFoundException, FileNotFoundException,IncorrectTypeException {
+    public void addNewDFAutomaton(String filePath) throws StateAlreadyExistsException, StartStateAlreadyExistsException,
+            StateNotFoundException, FileNotFoundException, IncorrectTypeException, KeyFromStateAlreadyExistsException {
         Scanner sc = new Scanner(new File(filePath));
+        
         sc.nextLine();
         String nextLine = sc.nextLine();
         if (nextLine.contains("DFA")) {
@@ -80,7 +89,7 @@ public class AutomatonController {
                     endOfStates = true;
                 } else {
                     State state = State.JSONtoState(nextLine);
-                    if ( state.isStartState()) {
+                    if (state.isStartState()) {
                         automaton.addStartState(state);
                     } else {
                         automaton.addState(state);
@@ -95,27 +104,29 @@ public class AutomatonController {
                     endOfTransitions = true;
                 } else {
                     nextLine = nextLine.replace(" ", "");
+                    nextLine = nextLine.replace(",", "");
                     nextLine = nextLine.replace("{", "");
                     nextLine = nextLine.replace("}", "");
                     nextLine = nextLine.replace("--------->", "-");
                     nextLine = nextLine.replace("---------", "-");
                     String[] lines = nextLine.split("-");
-                    
+
                     State from = automaton.getStateByName(lines[0]);
-                    char with =  lines[1].charAt(0);
+                    char with = lines[1].charAt(0);
                     State to = automaton.getStateByName(lines[2]);
                     automaton.addTransition(from, with, to);
                 }
             }
             addNewDFAutomaton(automaton);
+            this.filePath = filePath;
         } else {
             throw new IncorrectTypeException();
         }
-        
-        
+
     }
 
-    public void addNewPDAutomaton(String filePath) throws StateAlreadyExistsException, StartStateAlreadyExistsException, StateNotFoundException,FileNotFoundException,IncorrectTypeException {
+    public void addNewPDAutomaton(String filePath) throws StateAlreadyExistsException, StartStateAlreadyExistsException,
+            StateNotFoundException, FileNotFoundException, IncorrectTypeException, KeyFromStateAlreadyExistsException {
         Scanner sc = new Scanner(new File(filePath));
         sc.nextLine();
         String nextLine = sc.nextLine();
@@ -130,7 +141,7 @@ public class AutomatonController {
                     endOfStates = true;
                 } else {
                     State state = State.JSONtoState(nextLine);
-                    if ( state.isStartState()) {
+                    if (state.isStartState()) {
                         automaton.addStartState(state);
                     } else {
                         automaton.addState(state);
@@ -138,24 +149,24 @@ public class AutomatonController {
                 }
             }
             sc.nextLine();
-            
+
             boolean endOfTransitions = false;
             while (!endOfTransitions) {
-                
+
                 nextLine = sc.nextLine();
                 if (nextLine.equals("]")) {
                     endOfTransitions = true;
-                } else if (!nextLine.equals("")){
+                } else if (!nextLine.equals("")) {
                     nextLine = nextLine.replace(" ", "");
                     nextLine = nextLine.replace("{", "");
                     nextLine = nextLine.replace("}", "");
                     nextLine = nextLine.replace("--------->", "-");
                     nextLine = nextLine.replace("---------", "-");
-                    nextLine = nextLine.replace("/","-");
+                    nextLine = nextLine.replace("/", "-");
                     String[] lines = nextLine.split("-");
-                    
+
                     State from = automaton.getStateByName(lines[0]);
-                    char with =  lines[1].charAt(0);
+                    char with = lines[1].charAt(0);
                     char stackItem = lines[2].charAt(0);
                     State to = automaton.getStateByName(lines[3]);
                     String stackString = lines[4].replace(",", "");
@@ -166,11 +177,11 @@ public class AutomatonController {
                 }
             }
             addNewPDAutomaton(automaton);
+            this.filePath = filePath;
         } else {
             throw new IncorrectTypeException();
         }
-        
-        
+
     }
 
     public void addWordToRead(String word) {
@@ -182,11 +193,11 @@ public class AutomatonController {
     }
 
     public boolean isInputWordCorrect() throws MissingStartStateException {
-        
+
         boolean errorInReading = false;
         int i = 0;
-        
-        while ( i < wordToRead.length() && !errorInReading) {
+
+        while (i < wordToRead.length() && !errorInReading) {
             automaton.read(wordToRead.charAt(i));
             if (automaton.getCurrentState() == null) {
                 errorInReading = true;
@@ -196,15 +207,40 @@ public class AutomatonController {
         return !errorInReading && automaton.getCurrentState().isAcceptState();
     }
 
+    
+
     public void nextStepInReading() throws MissingStartStateException {
-        this.automaton.read(this.wordToRead.charAt(this.indexOfCurrentChar++)); 
+        System.out.println("--" + this.wordToRead.charAt(this.indexOfCurrentChar) +"--");
+        this.automaton.read(this.wordToRead.charAt(this.indexOfCurrentChar++));
         
     }
+
+    public boolean isCurrentStateRejectState() {
+       return  automaton.getCurrentState() == null;
+    }
+
+    public boolean isLastLetter() {
+        return indexOfCurrentChar ==  wordToRead.length();
+    }
+
+    public boolean isCurrentStateAcceptState() {
+        return  automaton.getCurrentState().isAcceptState();
+    }
+
+
+    public void reset() {
+        this.automaton.reset();
+        this.indexOfCurrentChar = 0;
+    }
+
     
+
+
+
     public void printCurrentOutput() {
 
         System.out.println(this.wordToRead.charAt(this.indexOfCurrentChar));
-        System.out.println( this.automaton.getCurrentState().toString());
+        System.out.println(this.automaton.getCurrentState().toString());
     }
 
     public State getCurrentState() {
@@ -225,7 +261,6 @@ public class AutomatonController {
         pw.flush();
         this.savedProject = true;
         this.latestSave = true;
-        
 
     }
 
@@ -234,24 +269,27 @@ public class AutomatonController {
         this.save();
         this.savedProject = true;
         this.latestSave = true;
-        
+
     }
 
     public State stateNear(double x, double y) {
         for (State state : automaton.getStates()) {
-            if( Math.pow(state.getX() - x,2) + Math.pow(state.getY() - y,2) < radiusOfStates * radiusOfStates )  {
+            if (Math.pow(state.getX() - x, 2) + Math.pow(state.getY() - y, 2) < radiusOfStates * radiusOfStates) {
                 return state;
             }
         }
         return null;
     }
 
+    
+
     public boolean canMakeState(double x, double y) {
         boolean intersectOtherState = false;
         int i = 0;
-        while( i <automaton.getStates().size() && !intersectOtherState) {
+        while (i < automaton.getStates().size() && !intersectOtherState) {
             State state = automaton.getStates().get(i);
-            if( Math.pow((state.getX() - x),2) + Math.pow((state.getY() - y), 2) < 4*radiusOfStates*radiusOfStates) {
+            if (Math.pow((state.getX() - x), 2) + Math.pow((state.getY() - y), 2) < 4 * radiusOfStates
+                    * radiusOfStates) {
                 intersectOtherState = true;
             }
             i++;
@@ -259,24 +297,29 @@ public class AutomatonController {
         return !intersectOtherState;
     }
 
-    public void addState(String name,double x, double y) throws StateAlreadyExistsException {
-        automaton.addState(name,x,y);
+    public void addState(String name, double x, double y) throws StateAlreadyExistsException {
+        automaton.addState(name, x, y);
+        latestSave = false;
     }
 
-    public void addStartState(String name, double x , double y) throws StateAlreadyExistsException, StartStateAlreadyExistsException {
-        automaton.addStartState(name,x,y);
+    public void addStartState(String name, double x, double y)
+            throws StateAlreadyExistsException, StartStateAlreadyExistsException {
+        automaton.addStartState(name, x, y);
+        latestSave = false;
     }
 
-    public void addAcceptState(String name,double x, double y) throws StateAlreadyExistsException {
-        automaton.addAcceptState(name,x,y);
+    public void addAcceptState(String name, double x, double y) throws StateAlreadyExistsException {
+        automaton.addAcceptState(name, x, y);
+        latestSave = false;
     }
 
-    public void makePDATransition(State from, char with, char stackItem, State to, String stackString)  {
+    public void makePDATransition(State from, char with, char stackItem, State to, String stackString)
+            throws KeyFromStateAlreadyExistsException {
         PDAutomaton automaton = (PDAutomaton)this.automaton;
         automaton.addTransition(from, with, stackItem, to, stackString);
     }
 
-    public void makeDFATransition(State from, char with, State to)  {
+    public void makeDFATransition(State from, char with, State to) throws KeyFromStateAlreadyExistsException {
         DFAutomaton automaton = (DFAutomaton)this.automaton;
         automaton.addTransition(from, with, to);
     }
@@ -284,9 +327,24 @@ public class AutomatonController {
     public void changePosition(State state,double x, double y) throws StateNotFoundException {
         State automatonState = automaton.getStateByName(state.getName());
         automatonState.setNewPosition(x, y);
+        latestSave = false;
     }
 
-    
+    public String getColoredInputWord() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html>");
+        for (int i = 0; i < getWordToRead().length(); i++) {
+            if(i == getIndexOfCurrentChar()) {
+                sb.append("<font color= red>" + getWordToRead().charAt(i) + "</font>");
+            } else {
+                sb.append(getWordToRead().charAt(i));
+            }
+            
+        }
+        sb.append("</html>");
+        return sb.toString();
+    }
+
 
      public void drawView() {
         this.view.repaint();

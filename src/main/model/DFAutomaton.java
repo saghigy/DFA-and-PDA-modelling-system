@@ -1,30 +1,37 @@
 package main.model;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
+import main.model.exceptions.KeyFromStateAlreadyExistsException;
 import main.model.exceptions.MissingStartStateException;
+import main.model.exceptions.StateNotFoundException;
 
 /**
  * Representation of District Finite Automaton
  */
 public class DFAutomaton extends BaseAutomaton {
 
-    private Map<DFATransitionKey,State> transitionFunction;
+    private Map<DFATransitionKey, State> transitionFunction;
 
     public DFAutomaton() {
         super();
         transitionFunction = new HashMap<>();
     }
 
-    
-
-    public void addTransition(State from,char with,State to) {
+    public void addTransition(State from, char with, State to) throws KeyFromStateAlreadyExistsException {
         DFATransitionKey key = new DFATransitionKey(from, with);
-        transitionFunction.put(key, to);
+        if (transitionFunction.get(key) == null) {
+            transitionFunction.put(key, to);
+        } else {
+            throw new KeyFromStateAlreadyExistsException(from, with);
+        }
     }
+
+    
 
     @Override
     public void read(char character) throws MissingStartStateException {
@@ -32,11 +39,7 @@ public class DFAutomaton extends BaseAutomaton {
             throw  new MissingStartStateException();
         }
         State nextState = transitionFunction.get(new DFATransitionKey(this.currentState,character));
-        if(nextState == null) {
-            //Exception: NOT SURE
-        } else {
-            currentState = nextState;
-        }
+        currentState = nextState;
     }
 
     @Override

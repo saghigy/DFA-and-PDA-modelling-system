@@ -85,6 +85,7 @@ public abstract class BaseAutomaton implements Automaton {
 
     }
 
+
     @Override
     public State getStateByName(String name) throws StateNotFoundException {
         for (State s : states) {

@@ -143,12 +143,14 @@ public class Main {
         try {
             tester.addStartState(startState);
             tester.addState(simpleState);
-            tester.addTransition(startState, 'C', simpleState);
-            
-
             System.out.println(tester);
-            AutomatonController controller = new AutomatonController();
-            System.out.println(tester.generateFileFormat());
+            tester.addTransition(startState, 'C', simpleState);
+            tester.setAcceptState(startState.getName());
+            
+            tester.read('C');
+            System.out.println(tester.getCurrentState());
+         
+          
         } catch (Exception e) {
             
             e.printStackTrace();
@@ -158,7 +160,7 @@ public class Main {
         
        
 
-       new TempFrame();
+      new TempFrame();
 
 
     }
