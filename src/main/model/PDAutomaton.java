@@ -10,6 +10,7 @@ import org.json.JSONArray;
 
 import main.model.exceptions.KeyFromStateAlreadyExistsException;
 import main.model.exceptions.MissingStartStateException;
+import main.model.exceptions.StateNotFoundException;
 
 /**
  * Represents a Pushdown Automaton
@@ -40,30 +41,31 @@ public class PDAutomaton extends BaseAutomaton {
      *                    each character.
      * @throws KeyFromStateAlreadyExistsException
      */
-    public void addTransition(State from, char with, char stackItem, State to, String stackString)
-            throws KeyFromStateAlreadyExistsException {
+    public void addTransition(State from, char with, char stackItem, State to, String stackString) throws KeyFromStateAlreadyExistsException, StateNotFoundException {
         for (Map.Entry<PDATransitionKey,PDATransitionValue> entry : transitionFunction.entrySet() ) {
-            if (entry.getKey().getState().equals(from) && entry.getKey().getLetter() == with ){
+            State fromState = getStateById(entry.getKey().getStateID());
+            State toState = getStateById(entry.getValue().getStateID());
+            if (fromState.equals(from) && entry.getKey().getLetter() == with ){
                 throw new KeyFromStateAlreadyExistsException(from, with);
             }
         }
-        PDATransitionKey transitionKey = new PDATransitionKey(from,with,stackItem);
-        PDATransitionValue transitionValue = new PDATransitionValue(to,stackString);
+        PDATransitionKey transitionKey = new PDATransitionKey(from.getID(),with,stackItem);
+        PDATransitionValue transitionValue = new PDATransitionValue(to.getID(),stackString);
         transitionFunction.put(transitionKey, transitionValue);
     }
 
     @Override
-    public void read(char character) throws MissingStartStateException {
+    public void read(char character) throws MissingStartStateException, StateNotFoundException{
         if (currentState == null) {
             throw  new MissingStartStateException();
         }
         char stackItem = stack.empty() ? '#' : stack.pop();
-        PDATransitionValue value = transitionFunction.get(new PDATransitionKey(this.currentState,character,stackItem));
+        PDATransitionValue value = transitionFunction.get(new PDATransitionKey(this.currentState.getID(),character,stackItem));
         if(value == null) {
             //Exception: NOT SURE
             currentState = null;
         } else {
-            State nextState = value.getState();
+            State nextState = getStateById(value.getStateID());
             currentState = nextState;
             for (char item : value.getStackItems() ) {
                 this.stack.add(item);
@@ -86,7 +88,13 @@ public class PDAutomaton extends BaseAutomaton {
         }
         sb.append("Trasitions: \n");
         for (Map.Entry<PDATransitionKey,PDATransitionValue> entry : transitionFunction.entrySet() ) {
-           sb.append(entry.getKey().getState().getName() + " ---------" + entry.getKey().getLetter() + " / " + entry.getKey().getStackItem() + "---------> " + entry.getValue().getState().getName() +" / " + entry.getValue().getStackItems() + "\n");
+            try {
+                State fromState = getStateById(entry.getKey().getStateID());
+                State toState = getStateById(entry.getValue().getStateID());
+                sb.append(fromState + " ---------" + entry.getKey().getLetter() + " / " + entry.getKey().getStackItem() + "---------> " + toState +" / " + entry.getValue().getStackItems() + "\n");
+            } catch(StateNotFoundException e) {
+                sb.append("ERROR");
+            }
         }
         sb.append("Stack: \n");
         sb.append("_     _\n");
@@ -112,13 +120,13 @@ public class PDAutomaton extends BaseAutomaton {
 
     @Override
     public void deleteState(State state) {
-        transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getValue().getState()));
-        transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getKey().getState()));
+        transitionFunction.entrySet().removeIf(entry -> state.getID() ==  entry.getValue().getStateID());
+        transitionFunction.entrySet().removeIf(entry -> state.getID() ==  entry.getKey().getStateID());
         states.remove(state);
     }
 
     @Override
-    public String generateFileFormat() {
+    public String generateFileFormat()  {
         StringBuilder fileFormat = new StringBuilder();
         fileFormat.append("#AutomatonModeller-Model\n");
         fileFormat.append("type : PDA\n");
@@ -136,7 +144,16 @@ public class PDAutomaton extends BaseAutomaton {
 
         String transitionFunctonString = transitionFunction.entrySet()
             .stream()
-            .map(entry -> "{ " + entry.getKey().getState().getName() + " ---------" + entry.getKey().getLetter() + " / " + entry.getKey().getStackItem() + "---------> " + entry.getValue().getState().getName() +" / " + entry.getValue().getStackItems() + " }")
+            .map(entry -> {
+                    try {
+                        return "{ " + getStateById(entry.getKey().getStateID()).getName() + " ---------"
+                                + entry.getKey().getLetter() + " / " + entry.getKey().getStackItem() + "---------> "
+                                + getStateById(entry.getValue().getStateID()).getName() + " / "
+                                + entry.getValue().getStackItems() + " }";
+                    } catch (StateNotFoundException e) {
+                        return "error";
+                    }
+                })
             .collect(Collectors.joining(",\n")); 
         fileFormat.append(transitionFunctonString);
         fileFormat.append("\n]");

@@ -192,7 +192,7 @@ public class AutomatonController {
         this.indexOfCurrentChar = 0;
     }
 
-    public boolean isInputWordCorrect() throws MissingStartStateException {
+    public boolean isInputWordCorrect() throws MissingStartStateException, StateNotFoundException {
 
         boolean errorInReading = false;
         int i = 0;
@@ -209,8 +209,7 @@ public class AutomatonController {
 
     
 
-    public void nextStepInReading() throws MissingStartStateException {
-        System.out.println("--" + this.wordToRead.charAt(this.indexOfCurrentChar) +"--");
+    public void nextStepInReading() throws MissingStartStateException, StateNotFoundException {
         this.automaton.read(this.wordToRead.charAt(this.indexOfCurrentChar++));
         
     }
@@ -313,8 +312,13 @@ public class AutomatonController {
         latestSave = false;
     }
 
+    public void deleteState(State state) {
+        automaton.deleteState(state);
+        latestSave = false;
+    }
+
     public void makePDATransition(State from, char with, char stackItem, State to, String stackString)
-            throws KeyFromStateAlreadyExistsException {
+            throws KeyFromStateAlreadyExistsException, StateNotFoundException {
         PDAutomaton automaton = (PDAutomaton)this.automaton;
         automaton.addTransition(from, with, stackItem, to, stackString);
     }

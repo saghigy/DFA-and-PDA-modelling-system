@@ -15,8 +15,9 @@ public interface Automaton {
      * Read a character and modify the automaton according to the transition function
      * @param character Character the automaton read (# counts as epsilon)
      * @throws MissingStartStateException
+     * @throws StateNotFoundException
      */
-    public void read(char character) throws MissingStartStateException;
+    public void read(char character) throws MissingStartStateException, StateNotFoundException;
 
     /**
      * Resets the automaton
@@ -93,9 +94,17 @@ public interface Automaton {
     /**
      * Make string format from automaton can be writeable to file
      * @return Filewriteable string
+     * @throws StateNotFoundException
      */
     public String generateFileFormat();
 
+    /**
+     * Return the state by a given id
+     * @param id The id of the wanted state
+     * @return State with given id
+     * @throws StateNotFoundException
+     */
+    public State getStateById(int id) throws StateNotFoundException ;
 
  
     

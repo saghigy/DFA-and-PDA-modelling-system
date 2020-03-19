@@ -15,7 +15,7 @@ import main.model.exceptions.StateNotFoundException;
  */
 public class DFAutomaton extends BaseAutomaton {
 
-    private Map<DFATransitionKey, State> transitionFunction;
+    private Map<DFATransitionKey, Integer> transitionFunction;
 
     public DFAutomaton() {
         super();
@@ -23,9 +23,9 @@ public class DFAutomaton extends BaseAutomaton {
     }
 
     public void addTransition(State from, char with, State to) throws KeyFromStateAlreadyExistsException {
-        DFATransitionKey key = new DFATransitionKey(from, with);
+        DFATransitionKey key = new DFATransitionKey(from.getID(), with);
         if (transitionFunction.get(key) == null) {
-            transitionFunction.put(key, to);
+            transitionFunction.put(key, to.getID());
         } else {
             throw new KeyFromStateAlreadyExistsException(from, with);
         }
@@ -34,11 +34,11 @@ public class DFAutomaton extends BaseAutomaton {
     
 
     @Override
-    public void read(char character) throws MissingStartStateException {
+    public void read(char character) throws MissingStartStateException, StateNotFoundException {
         if (currentState == null) {
             throw  new MissingStartStateException();
         }
-        State nextState = transitionFunction.get(new DFATransitionKey(this.currentState,character));
+        State nextState = getStateById( transitionFunction.get(new DFATransitionKey(this.currentState.getID(),character)));
         currentState = nextState;
     }
 
@@ -47,7 +47,7 @@ public class DFAutomaton extends BaseAutomaton {
         super.reset();
     }
 
-    public Map<DFATransitionKey,State> getTransitionFunction() {
+    public Map<DFATransitionKey,Integer> getTransitionFunction() {
         return this.transitionFunction;
     }
 
@@ -59,8 +59,14 @@ public class DFAutomaton extends BaseAutomaton {
             sb.append(s.toString() + "\n");
         }
         sb.append("Trasitions: \n");
-        for (Map.Entry<DFATransitionKey,State> entry : transitionFunction.entrySet() ) {
-           sb.append(entry.getKey().getState().getName() + " ---------" + entry.getKey().getLetter() + "---------> " + entry.getValue().getName() + "\n");
+        for (Map.Entry<DFATransitionKey,Integer> entry : transitionFunction.entrySet() ) {
+            try {
+            String fromStateName = getStateById( entry.getKey().getStateID()).getName();
+            String toStateName = getStateById( entry.getValue()).getName();
+           sb.append(fromStateName + " ---------" + entry.getKey().getLetter() + "---------> " + toStateName + "\n");
+            } catch(Exception e) {
+                sb.append("ERROR");
+            }
         }
 
         return sb.toString();
@@ -69,9 +75,10 @@ public class DFAutomaton extends BaseAutomaton {
     
     @Override
     public void deleteState(State state) {
-        transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getValue()));
-        transitionFunction.entrySet().removeIf(entry -> state.equals(entry.getKey().getState()));
+        transitionFunction.entrySet().removeIf(entry -> state.getID() == entry.getValue());
+        transitionFunction.entrySet().removeIf(entry -> state.getID() == entry.getKey().getStateID());
         states.remove(state);
+
     }
 
     @Override
@@ -89,14 +96,23 @@ public class DFAutomaton extends BaseAutomaton {
         }
         fileFormat.append("]\n");
         fileFormat.append("transitions : [\n");
+        
         String transitionFunctonString = transitionFunction.entrySet()
             .stream()
-            .map(entry -> "{ " + entry.getKey().getState().getName() + " ---------" + entry.getKey().getLetter() + "---------> " + entry.getValue().getName() + " }")
+            .map(entry -> {
+                    try {
+                        return "{ " + getStateById(entry.getKey().getStateID()).getName() + " ---------"
+                                + entry.getKey().getLetter() + "---------> " + getStateById(entry.getValue()).getName()
+                                + " }";
+                    } catch (StateNotFoundException e) {
+                        return "error";
+                    }
+                })
             .collect(Collectors.joining(",\n")); 
         fileFormat.append(transitionFunctonString);
         fileFormat.append("\n]");
 
-
+        
         return fileFormat.toString();
         
     }

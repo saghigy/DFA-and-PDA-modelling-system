@@ -19,6 +19,7 @@ import org.json.JSONObject;
  */
 public class State {
 
+    private  int id;
     private  String name;
     private  double x;
     private  double y;
@@ -61,9 +62,17 @@ public class State {
         return this.acceptState;
     }
 
+    public int getID() {
+        return this.id;
+    }
+
     public void setNewPosition(double x, double y) {
         this.x = x;
         this.y = y;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override
@@ -84,16 +93,19 @@ public class State {
     
 
 
+
     @Override
     public String toString() {
         return "{" +
-            " name='" + name + "'" +
-            ", (" + x + "" +
-            ", " + y + ")" +
-            ", acceptState='" + acceptState + "'" +
-            ", startState='" + startState + "'" +
+            " id='" + getID() + "'" +
+            ", name='" + getName() + "'" +
+            ", x='" + getX() + "'" +
+            ", y='" + getY() + "'" +
+            ", acceptState='" + isAcceptState() + "'" +
+            ", startState='" + isStartState() + "'" +
             "}";
     }
+   
 
 
     public static String codeToFileFormat(State state) {

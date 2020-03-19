@@ -8,11 +8,11 @@ import java.util.ArrayList;
  */
 public class PDATransitionValue {
 
-    private State state;
+    private Integer stateID;
     private ArrayList<Character> stackItems;
 
-    public PDATransitionValue(State state,String stackItemsString) {
-        this.state = state;
+    public PDATransitionValue(Integer stateID,String stackItemsString) {
+        this.stateID = stateID;
         ArrayList<Character> stackItems = new ArrayList<>();
         for (Character c : stackItemsString.toCharArray()) {
            stackItems.add(c);
@@ -21,8 +21,8 @@ public class PDATransitionValue {
 
     }
 
-    public State getState() {
-        return this.state;
+    public Integer getStateID() {
+        return this.stateID;
     }
 
     public ArrayList<Character> getStackItems() {

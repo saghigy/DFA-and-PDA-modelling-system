@@ -7,22 +7,22 @@ import java.util.Objects;
  */
 public class PDATransitionKey {
 
-    private State state;
+    private Integer stateID;
     private Character letter;
     private Character stackItem;
 
 
 
-    public PDATransitionKey(State state, Character letter, Character stackItem) {
-        this.state = state;
+    public PDATransitionKey(Integer stateID, Character letter, Character stackItem) {
+        this.stateID = stateID;
         this.letter = letter;
         this.stackItem = stackItem;
     }
     
 
 
-    public State getState() {
-        return this.state;
+    public Integer getStateID() {
+        return this.stateID;
     }
 
     public Character getLetter() {
@@ -33,6 +33,7 @@ public class PDATransitionKey {
         return this.stackItem;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (o == this)
@@ -41,12 +42,13 @@ public class PDATransitionKey {
             return false;
         }
         PDATransitionKey pDATransitionKey = (PDATransitionKey) o;
-        return Objects.equals(state, pDATransitionKey.state) && Objects.equals(letter, pDATransitionKey.letter) && Objects.equals(stackItem, pDATransitionKey.stackItem);
+        return Objects.equals(stateID, pDATransitionKey.stateID) && Objects.equals(letter, pDATransitionKey.letter) && Objects.equals(stackItem, pDATransitionKey.stackItem);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(state, letter, stackItem);
+        return Objects.hash(stateID, letter, stackItem);
     }
+  
     
 }

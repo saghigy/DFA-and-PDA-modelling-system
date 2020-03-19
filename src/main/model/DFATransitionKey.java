@@ -7,21 +7,22 @@ import java.util.Objects;
  */
 public class DFATransitionKey {
 
-    private State state;
+    private int stateID;
     private Character letter;
 
-    public DFATransitionKey(State state, char letter) {
-        this.state = state;
+    public DFATransitionKey(int stateID, char letter) {
+        this.stateID = stateID;
         this.letter = letter;
     }
 
-    public State getState() {
-        return this.state;
+    public int getStateID() {
+        return this.stateID;
     }
 
     public char getLetter() {
         return this.letter;
     }
+
 
     @Override
     public boolean equals(Object o) {
@@ -30,13 +31,14 @@ public class DFATransitionKey {
         if (!(o instanceof DFATransitionKey)) {
             return false;
         }
-        DFATransitionKey transitionKey = (DFATransitionKey) o;
-        return Objects.equals(state, transitionKey.state) && Objects.equals(letter, transitionKey.letter);
+        DFATransitionKey dFATransitionKey = (DFATransitionKey) o;
+        return stateID == dFATransitionKey.stateID && Objects.equals(letter, dFATransitionKey.letter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(state, letter);
+        return Objects.hash(stateID, letter);
     }
+   
 
 }

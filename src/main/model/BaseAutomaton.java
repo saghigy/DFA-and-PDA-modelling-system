@@ -14,6 +14,7 @@ import main.model.exceptions.StateNotFoundException;
  */
 public abstract class BaseAutomaton implements Automaton {
 
+    protected int idCounter;
     protected ArrayList<State> states;
     protected State startState;
     protected State currentState;
@@ -21,11 +22,12 @@ public abstract class BaseAutomaton implements Automaton {
     
 
     public BaseAutomaton() {
+        idCounter = 0;
         this.states = new ArrayList<>();
     }
 
     @Override
-    public abstract void read(char character) throws MissingStartStateException;
+    public abstract void read(char character) throws MissingStartStateException, StateNotFoundException;
 
 
     @Override
@@ -40,6 +42,7 @@ public abstract class BaseAutomaton implements Automaton {
                 throw new StateAlreadyExistsException();
             }
         }
+        state.setId(idCounter++);
         states.add(state);
         
     }
@@ -97,6 +100,16 @@ public abstract class BaseAutomaton implements Automaton {
     }
 
     @Override
+    public State getStateById(int id) throws StateNotFoundException {
+        for (State s : states) {
+            if(s.getID() ==  id ) {
+                return s;
+            }
+        }
+        throw new StateNotFoundException();
+    }
+
+    @Override
     public abstract void deleteState(State state);
 
 
@@ -110,9 +123,7 @@ public abstract class BaseAutomaton implements Automaton {
     }
 
     @Override
-    public String generateFileFormat() {
-        return null;
-    }
+    public abstract String generateFileFormat() ;
 
     
 
