@@ -17,6 +17,9 @@ import main.model.exceptions.StateNotFoundException;
  */
 public class PDAutomaton extends BaseAutomaton {
 
+    /**
+     * Represents the stack of the automaton
+     */
     private Stack<Character> stack;
     private Map<PDATransitionKey,PDATransitionValue> transitionFunction;
     private Character startingStackItem;
@@ -32,19 +35,20 @@ public class PDAutomaton extends BaseAutomaton {
     
     /**
      * 
-     * @param from
-     * @param with
-     * @param stackItem   '#'' means the end of the stack
-     * @param to
+     * @param from A state where the transition starts.
+     * @param with A character for transition key.
+     * @param stackItem  Item read from the stack for transition key. '#' means the end of the stack
+     * @param to A state where the transition ends.
      * @param stackString A string containing charachters that should be pushed into
      *                    the stack. Items are pushed into the stack one by one per
      *                    each character.
-     * @throws KeyFromStateAlreadyExistsException
+     * @throws KeyFromStateAlreadyExistsException If a transition with the given character already exists.
+     * @throws StateNotFoundException If one of the states is not found
+
      */
     public void addTransition(State from, char with, char stackItem, State to, String stackString) throws KeyFromStateAlreadyExistsException, StateNotFoundException {
         for (Map.Entry<PDATransitionKey,PDATransitionValue> entry : transitionFunction.entrySet() ) {
             State fromState = getStateById(entry.getKey().getStateID());
-            State toState = getStateById(entry.getValue().getStateID());
             if (fromState.equals(from) && entry.getKey().getLetter() == with ){
                 throw new KeyFromStateAlreadyExistsException(from, with);
             }
@@ -59,7 +63,9 @@ public class PDAutomaton extends BaseAutomaton {
         if (currentState == null) {
             throw  new MissingStartStateException();
         }
+       
         char stackItem = stack.empty() ? '#' : stack.pop();
+    System.out.println(this.currentState.getID() +" "+ character + " "+stackItem);
         PDATransitionValue value = transitionFunction.get(new PDATransitionKey(this.currentState.getID(),character,stackItem));
         if(value == null) {
             //Exception: NOT SURE
@@ -67,16 +73,18 @@ public class PDAutomaton extends BaseAutomaton {
         } else {
             State nextState = getStateById(value.getStateID());
             currentState = nextState;
-            for (char item : value.getStackItems() ) {
-                this.stack.add(item);
+            for ( int i = value.getStackItems().size()-1; i>=0; i-- ) {
+                this.stack.push(value.getStackItems().get(i));
             }
         }
+    
     }
 
     @Override
     public void reset() {
         super.reset();
         this.stack.clear();
+        this.stack.push(this.startingStackItem);
     }
 
     @Override

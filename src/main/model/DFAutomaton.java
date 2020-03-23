@@ -22,6 +22,13 @@ public class DFAutomaton extends BaseAutomaton {
         transitionFunction = new HashMap<>();
     }
 
+    /**
+     * 
+     * @param from A state where the transition starts.
+     * @param with A character for transition key.
+     * @param to A state where the transition ends.
+     * @throws KeyFromStateAlreadyExistsException If a transition with the given character already exists.
+     */
     public void addTransition(State from, char with, State to) throws KeyFromStateAlreadyExistsException {
         DFATransitionKey key = new DFATransitionKey(from.getID(), with);
         if (transitionFunction.get(key) == null) {

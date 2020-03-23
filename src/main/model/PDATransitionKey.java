@@ -3,7 +3,8 @@ package main.model;
 import java.util.Objects;
 
 /**
- * PDATransitionKey
+ * Transiiton key for PDAutomatons
+ * Key for transition maps in PDAutomatons
  */
 public class PDATransitionKey {
 

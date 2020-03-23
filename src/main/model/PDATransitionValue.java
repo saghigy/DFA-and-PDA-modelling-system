@@ -4,7 +4,8 @@ import java.util.ArrayList;
 
 
 /**
- * PDATransitionValue
+ * Transiiton value for PDAutomatons
+ * Value for transition maps in PDAutomatons
  */
 public class PDATransitionValue {
 

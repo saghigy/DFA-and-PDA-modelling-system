@@ -3,10 +3,11 @@ package main.model;
 import java.util.Objects;
 
 /**
- * TransitionKey
+ * TransitionKey for DF Automatons
+ * Key for transition maps in DFAutomatons
  */
 public class DFATransitionKey {
-
+    
     private int stateID;
     private Character letter;
 

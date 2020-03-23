@@ -96,6 +96,7 @@ public class TempFrame extends JFrame {
     boolean inputReadRunning;
     int t;  // current speed ofrun
     int previousTime; // previous speed of run
+    JLabel stackLabel;
 
     public TempFrame() {
 
@@ -164,6 +165,13 @@ public class TempFrame extends JFrame {
 
     }
 
+    /**
+     * Sets the title of the project. [*][filePath]AutomatonModeller 
+     * <ul>
+     *   <li> * : The project is not saved.
+     *   <li> filePath: The path of the project. Appears if it is a saved/opened project.
+     * </u>
+     */
     private void setProjectTitle() {
         StringBuilder title = new StringBuilder();
         if(controller.isSavedProject()){
@@ -177,6 +185,10 @@ public class TempFrame extends JFrame {
         this.setTitle(title.toString());
     }
 
+    /**
+     * Make the modeller window with the modelling controller panel and the visualization panel.
+     * @param isDFA Is the type of the automaton DFA.
+     */
     private void makeWindow(boolean isDFA) {
 
         this.getContentPane().setLayout(new BorderLayout());
@@ -262,7 +274,12 @@ public class TempFrame extends JFrame {
                         String[] value = items[0].split("/");
                         char with = value[0].charAt(0);
                         char stackItem = value[1].charAt(0);
-                        String stackString = items[1];
+                        String stackString = "";
+                        if(items.length == 2) {
+                            stackString = items[1];
+                        }
+                        
+                        
                         try {
                             controller.makePDATransition(clickedState, with, stackItem, stateNear, stackString);
                         } catch (Exception e) {
@@ -327,8 +344,8 @@ public class TempFrame extends JFrame {
         wordLabel.setBorder(BorderFactory.createLineBorder(Color.black));
         speedSlider = new JSlider(JSlider.HORIZONTAL,1, 10, 1);
         JLabel speedLabel = new JLabel("Speed");
-
-      
+        
+        // options of the slider
         speedSlider.setMajorTickSpacing(1);
         speedSlider.setMinorTickSpacing(1);
         speedSlider.setPaintTrack(true);
@@ -351,20 +368,26 @@ public class TempFrame extends JFrame {
         controllingPanel.add(speedSlider);
         controllingPanel.add(wordAdderButton);
         controllingPanel.add(stopButton);
+        
+        //  bounds
+        speedSlider.setBounds (10, 290, 275, 50);
+        wordLabel.setBounds (10, 135, 280, 45);
+        speedLabel.setBounds (15, 255, 100, 25);
+        nextButton.setBounds (185, 365, 75, 25);
+        runButton.setBounds (35, 365, 80, 25);
+        wordAdderButton.setBounds (25, 200, 120, 25);
+        stopButton.setBounds (35, 400, 80, 25);
+        
 
-        speedSlider.setBounds (10, 390, 275, 50);
-        wordLabel.setBounds (10, 235, 280, 45);
-        speedLabel.setBounds (15, 355, 100, 25);
-        nextButton.setBounds (185, 465, 75, 25);
-        runButton.setBounds (35, 465, 80, 25);
-        wordAdderButton.setBounds (25, 300, 120, 25);
-        stopButton.setBounds (35, 500, 80, 25);
+        //  stack settings
+        if(!controller.isDFA()) {
+            stackLabel = new JLabel();
+            drawStack();
+            stackLabel.setBorder(BorderFactory.createLineBorder(Color.black));
+            controllingPanel.add(stackLabel);
+            stackLabel.setBounds(100,550,100,200);
+        }
        
- 
-      
-
-        
-        
     
         this.getContentPane().add(viewPanel);
         this.getContentPane().add(controllingPanel,BorderLayout.EAST);
@@ -373,6 +396,17 @@ public class TempFrame extends JFrame {
         this.revalidate();
     }
 
+    /**
+     * Draws the stack in the stack label.
+     */
+    private void drawStack() {
+        stackLabel.setText(controller.getStack());
+    }
+
+    /**
+     * Check if the state moving is allowed.
+     * @return The state moving is allowed.
+     */
     private synchronized boolean checkAndMark() {
         if (moveIsRunning)
             return false;
@@ -380,6 +414,10 @@ public class TempFrame extends JFrame {
         return true;
     }
 
+    /**
+     * Moving the given state where the cursor is.
+     * @param state The movable state.
+     */
     private void initThread(State state) {
         if (checkAndMark()) {
             new Thread() {
@@ -401,11 +439,91 @@ public class TempFrame extends JFrame {
         }
     }
 
-    
-    
+    /**
+     * Reading a char from input word and modifies the view. Check if the current state exists, if not shows error. If this was the last read check if the state is accepted or rejected.
+     * @throws MissingStartStateException There is no start state in the automaton.
+     * @throws StateNotFoundException A used state is not found.
+     */
+    private void charRead() throws MissingStartStateException, StateNotFoundException {
+        
+        controller.nextStepInReading();
+        
+        if(!controller.isDFA())
+            drawStack();
+        
+        if(controller.isCurrentStateRejectState()) {
+            JOptionPane.showMessageDialog(TempFrame.this, "Reject state! Word is not accepted", "Error", JOptionPane.ERROR_MESSAGE);
+            
+            controller.reset();
+            inputReadRunning = false;
+            wordLabel.setText(controller.getColoredInputWord());
+            if(!controller.isDFA())
+                drawStack();  
+        } 
+        wordLabel.setText(controller.getColoredInputWord());
+        getContentPane().repaint();
+        if( controller.isLastLetter() ) {
+            if(controller.isCurrentStateAcceptState()) {
+                JOptionPane.showMessageDialog(TempFrame.this, "Given word is accepted", "Accepted", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(TempFrame.this, "Given word is not accepted", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            
+            inputReadRunning = false;
+            controller.reset();
+            wordLabel.setText(controller.getColoredInputWord());
+            
+            if(!controller.isDFA())
+                drawStack();         
+        }
+        
+        getContentPane().repaint();
+            
+    }
+
+     /**
+     * Run of the reading with the speed of read by the speed slider.
+     */
+    private void runWithTimer() {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+
+            @Override
+            public void run() {
+               
+                  
+                try{
+                    
+                    if(!inputReadRunning) {
+                        timer.cancel();
+                        timer.purge();
+                    } else {
+                        if(previousTime != t) {
+                            previousTime = t;
+                            timer.cancel();
+                            runWithTimer();
+                        }
+
+                        charRead();
+                        
+
+                    }
+                  
+                }catch(Exception e1) {
+
+                }
+                
+                }
+        }, 0, t*1000); 
+    }
 
     
+    //Actions
 
+
+    /**
+     * Action which opens a window where user can make a new DFAutomaton. An empty one or on from a regular expression.
+     */
     private AbstractAction actionOpenNewDFAWindow = new AbstractAction() {
 
         @Override
@@ -435,9 +553,9 @@ public class TempFrame extends JFrame {
             JTextField regexp = new JTextField(10);
             JLabel checkLabel = new JLabel();
             Icon fineIcon = new ImageIcon(
-                    new ImageIcon("res/regexp_fine.png").getImage().getScaledInstance(21, 21, Image.SCALE_DEFAULT));
+                    new ImageIcon("resources/regexp_fine.png").getImage().getScaledInstance(21, 21, Image.SCALE_DEFAULT));
             Icon badIcon = new ImageIcon(
-                    new ImageIcon("res/regexp_bad.png").getImage().getScaledInstance(21, 21, Image.SCALE_DEFAULT));
+                    new ImageIcon("resources/regexp_bad.png").getImage().getScaledInstance(21, 21, Image.SCALE_DEFAULT));
 
             regexp.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
@@ -526,6 +644,9 @@ public class TempFrame extends JFrame {
 
     };
 
+    /**
+     * Action which opens a window where the user can make a PDAutomaton with a start symbol.
+     */
     private AbstractAction actionOpenNewPDAWindow = new AbstractAction() {
 
         @Override
@@ -574,6 +695,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Action which opens a window where the user can open a DFAutomaton from file.
+     */
     private AbstractAction actionOpenMakeDFAWindow = new AbstractAction() {
 
         @Override
@@ -599,6 +723,10 @@ public class TempFrame extends JFrame {
         }
     };
 
+
+    /**
+     * Action which opens a window where the user can open a PDAutomaton from file.
+     */
     private AbstractAction actionOpenMakePDAWindow = new AbstractAction() {
 
         @Override
@@ -622,6 +750,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Action which saves the current stage of the automaton.
+     */
     private AbstractAction actionSave = new AbstractAction() {
 
         @Override
@@ -662,6 +793,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Action which opens a window where the user can choose a file to save the current stage of the automaton.
+     */
     private AbstractAction actionSaveAs = new AbstractAction() {
 
         @Override
@@ -694,6 +828,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Action to make a state where the clicked position is if it is possible.
+     */
     private AbstractAction actionMakeState = new AbstractAction() {
 
         @Override
@@ -718,6 +855,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Action to make an accept state where the clicked position is if it is possible.
+     */
     private AbstractAction actionMakeAcceptState = new AbstractAction() {
 
         @Override
@@ -742,6 +882,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+       /**
+        * Action to make a start state where the clicked position is if it is possible.
+        */
     private AbstractAction actionMakeStartState = new AbstractAction() {
 
         @Override
@@ -771,6 +914,9 @@ public class TempFrame extends JFrame {
         
     };
     
+    /**
+     * Action to set the choosen state to accept state.
+     */
     private AbstractAction actionSetToAcceptState = new AbstractAction() {
 
         @Override
@@ -783,6 +929,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Action to delete a choosen state
+     */
     private AbstractAction actionDeleteState = new AbstractAction() {
 
         @Override
@@ -795,6 +944,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Action which allows transition making.
+     */
     private AbstractAction actionMakeTransition = new AbstractAction() {
 
         @Override
@@ -803,53 +955,43 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Action to add a word as the input word.
+     */
     private AbstractAction actionAddWord = new AbstractAction() {
 
         @Override
-        public void actionPerformed(ActionEvent e) { 
+        public void actionPerformed(ActionEvent e) {
+            
             String input = JOptionPane.showInputDialog("Input word:");
             controller.addWordToRead(input);
             wordLabel.setText(controller.getColoredInputWord());
             controller.reset();
+            
         }
     };
 
+  /**
+   * Action to read a character from the inut word.
+   */
     private AbstractAction actionRead = new AbstractAction() {
 
         @Override
         public void actionPerformed(ActionEvent e) { 
-            
             try {
-                controller.nextStepInReading();
-                if(controller.isCurrentStateRejectState()) {
-                    JOptionPane.showMessageDialog(TempFrame.this, "Reject state! Word is not accepted", "Error", JOptionPane.ERROR_MESSAGE);
-                    
-                    controller.reset();
-                    wordLabel.setText(controller.getColoredInputWord());
-                } 
-                wordLabel.setText(controller.getColoredInputWord());
-                getContentPane().repaint();
-                if( controller.isLastLetter() ) {
-                    if(controller.isCurrentStateAcceptState()) {
-                        JOptionPane.showMessageDialog(TempFrame.this, "Given word is accepted", "Accepted", JOptionPane.INFORMATION_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(TempFrame.this, "Given word is not accepted", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                    
-                    controller.reset();
-                    wordLabel.setText(controller.getColoredInputWord());
-                }
-                getContentPane().repaint();
-               
-
+                charRead();
             } catch (Exception e1) {
 
                 JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
+            
 
         }
     };
 
+    /**
+     * Action to run a reading of the input word. It's speed is setable from the speed slider.
+     */
     private AbstractAction actionRun = new AbstractAction() {
 
         @Override
@@ -860,69 +1002,12 @@ public class TempFrame extends JFrame {
             inputReadRunning = true;
             runWithTimer();
             
-            
-            
-           
         }
     };
 
-    private void runWithTimer() {
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-
-            @Override
-            public void run() {
-               
-                  
-                try{
-                    
-                    if(!inputReadRunning) {
-                        timer.cancel();
-                        timer.purge();
-                    } else {
-                        if(previousTime != t) {
-                            previousTime = t;
-                            timer.cancel();
-                            runWithTimer();
-                        }
-
-                        controller.nextStepInReading();
-                        if(controller.isCurrentStateRejectState()) {
-                            JOptionPane.showMessageDialog(TempFrame.this, "Reject state! Word is not accepted", "Error", JOptionPane.ERROR_MESSAGE);
-                            
-                            controller.reset();
-                            wordLabel.setText(controller.getColoredInputWord());
-                            inputReadRunning = false;
-                            
-                        } 
-                        wordLabel.setText(controller.getColoredInputWord());
-                        getContentPane().repaint();
-                        if( controller.isLastLetter() ) {
-                            if(controller.isCurrentStateAcceptState()) {
-                                JOptionPane.showMessageDialog(TempFrame.this, "Given word is accepted", "Accepted", JOptionPane.INFORMATION_MESSAGE);
-                            } else {
-                                JOptionPane.showMessageDialog(TempFrame.this, "Given word is not accepted", "Error", JOptionPane.ERROR_MESSAGE);
-                            }
-                            inputReadRunning = false;
-                            
-                            controller.reset();
-                            wordLabel.setText(controller.getColoredInputWord());
-                            
-                            
-                        }
-                            getContentPane().repaint();
-                        
-
-                    }
-                  
-                }catch(Exception e1) {
-
-                }
-                
-                }
-        }, 0, t*1000); 
-    }
-
+   /**
+    * Action to stop reading.
+    */
     private AbstractAction actionStopRun = new AbstractAction() {
 
         @Override
@@ -931,6 +1016,9 @@ public class TempFrame extends JFrame {
         }
     };
 
+    /**
+     * Listener which sets the value of the time of the reading.
+     */
     private ChangeListener actionSpeedChange = new ChangeListener(){
     
         @Override
