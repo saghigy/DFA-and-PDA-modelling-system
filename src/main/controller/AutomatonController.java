@@ -13,6 +13,7 @@ import java.util.Scanner;
 
 import org.json.Property;
 
+import main.Languages;
 import main.controller.exceptions.IncorrectTypeException;
 import main.model.Automaton;
 import main.model.BaseAutomaton;
@@ -59,9 +60,9 @@ public class AutomatonController {
      * @param country  The wanted country
      */
     public void setLanguage(String language, String country) {
-        currentLocale = new Locale(language, country);
-        
-        //this.messages = ResourceBundle.getBundle("config",currentLocale);
+        Languages.setLanguageAndRegion(language, country);
+        //currentLocale = new Locale(language, country);  
+        //this.messages = ResourceBundle.getBundle("languages.lang",currentLocale);
     }
 
     /**

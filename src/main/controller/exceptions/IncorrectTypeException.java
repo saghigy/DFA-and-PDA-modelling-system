@@ -1,11 +1,13 @@
 package main.controller.exceptions;
 
+import main.Languages;
+
 /**
  * IncorrectTypeException
  */
 public class IncorrectTypeException extends Exception{
 
     public  IncorrectTypeException() {
-        super("Incorrect type in file");
+        super(Languages.msg("IncorrectType"));
     }
 }

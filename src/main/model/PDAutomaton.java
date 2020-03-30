@@ -63,15 +63,16 @@ public class PDAutomaton extends BaseAutomaton {
         if (currentState == null) {
             throw  new MissingStartStateException();
         }
-       
+        
         char stackItem = stack.empty() ? '#' : stack.pop();
-    System.out.println(this.currentState.getID() +" "+ character + " "+stackItem);
         PDATransitionValue value = transitionFunction.get(new PDATransitionKey(this.currentState.getID(),character,stackItem));
         if(value == null) {
             //Exception: NOT SURE
             currentState = null;
         } else {
+            lastReadLetter = character;
             State nextState = getStateById(value.getStateID());
+            previousState = currentState;
             currentState = nextState;
             for ( int i = value.getStackItems().size()-1; i>=0; i-- ) {
                 this.stack.push(value.getStackItems().get(i));

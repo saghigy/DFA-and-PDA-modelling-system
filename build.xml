@@ -33,6 +33,9 @@
         <javac includeantruntime="false" srcdir="${main.src.dir}" destdir="${main.build.dir}" >
             <classpath refid="classpath.json"/>
         </javac>
+
+        <copydir dest="build/classes/languages" src="resources/languages"></copydir>
+
     </target>
 
     <target name="test-compile" depends="compile">
@@ -44,6 +47,8 @@
     <target name="clean">
         <delete dir="build"/>
     </target>
+    
+
 
     <target name="jar" depends="compile">
         <mkdir dir="build/jar"/>

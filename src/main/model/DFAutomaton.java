@@ -16,6 +16,7 @@ import main.model.exceptions.StateNotFoundException;
 public class DFAutomaton extends BaseAutomaton {
 
     private Map<DFATransitionKey, Integer> transitionFunction;
+    
 
     public DFAutomaton() {
         super();
@@ -45,7 +46,9 @@ public class DFAutomaton extends BaseAutomaton {
         if (currentState == null) {
             throw  new MissingStartStateException();
         }
+        lastReadLetter = character;
         State nextState = getStateById( transitionFunction.get(new DFATransitionKey(this.currentState.getID(),character)));
+        previousState = currentState;
         currentState = nextState;
     }
 

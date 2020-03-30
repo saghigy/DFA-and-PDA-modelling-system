@@ -1,5 +1,6 @@
 package main.model.exceptions;
 
+import main.Languages;
 import main.model.State;
 
 /**
@@ -8,7 +9,7 @@ import main.model.State;
 public class KeyFromStateAlreadyExistsException extends Exception {
 
     public KeyFromStateAlreadyExistsException(State state,char letter ) {
-        super("Transition with " + letter + " already exists from " + state.getName());
+        super(Languages.msg("KeyFromState1") + letter + Languages.msg("KeyFromState2") + state.getName());
     }
     
 }

@@ -18,6 +18,12 @@ public abstract class BaseAutomaton implements Automaton {
     protected ArrayList<State> states;
     protected State startState;
     protected State currentState;
+    protected State previousState;
+    protected char lastReadLetter;
+
+    public char getLastReadLetter() {
+        return this.lastReadLetter;
+    }
     
     
 
@@ -33,6 +39,7 @@ public abstract class BaseAutomaton implements Automaton {
     @Override
     public void reset() {
         this.currentState = this.startState;
+        this.previousState = this.startState;
     }
 
     @Override
@@ -64,6 +71,7 @@ public abstract class BaseAutomaton implements Automaton {
         addState(state);
         this.startState = state;
         this.currentState = state;
+        this.previousState = state;
         state.setStartState(true);
         
     }
@@ -120,6 +128,10 @@ public abstract class BaseAutomaton implements Automaton {
 
     public State getCurrentState(){
         return this.currentState;
+    }
+
+    public State getPreviousState(){
+        return this.previousState;
     }
 
     @Override

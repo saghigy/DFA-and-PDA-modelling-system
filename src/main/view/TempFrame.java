@@ -20,6 +20,7 @@ import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.MouseInfo;
 import java.awt.color.*;
@@ -33,6 +34,7 @@ import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -47,6 +49,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SpringLayout;
@@ -59,6 +62,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import main.Languages;
 import main.controller.AutomatonController;
 import main.model.PDAutomaton;
 import main.model.State;
@@ -90,13 +94,16 @@ public class TempFrame extends JFrame {
     volatile private boolean mouseDown = false;
     volatile private boolean moveIsRunning = false;
     JLabel wordLabel;
-    JSlider speedSlider ;
-    long startTime ;
+    JSlider speedSlider;
+    long startTime;
     boolean endOfReading = false;
     boolean inputReadRunning;
-    int t;  // current speed ofrun
+    int t; // current speed ofrun
     int previousTime; // previous speed of run
     JLabel stackLabel;
+    JButton stopButton;
+    JButton runButton;
+    JButton nextButton;
 
     public TempFrame() {
 
@@ -110,13 +117,13 @@ public class TempFrame extends JFrame {
 
         // menu bar
         JMenuBar menuBar = new JMenuBar();
-        JMenu menuFile = new JMenu("File");
-        JMenuItem menuItemAddNewDFA = new JMenuItem("New DFA");
-        JMenuItem menuItemAddNewPDA = new JMenuItem("New PDA");
-        JMenuItem menuItemOpenNewDFA = new JMenuItem("Open DFA");
-        JMenuItem menuItemOpenNewPDA = new JMenuItem("Open PDA");
-        JMenuItem menuItemSave = new JMenuItem("Save");
-        JMenuItem menuItemSaveAs = new JMenuItem("Save As");
+        JMenu menuFile = new JMenu(msg("File"));
+        JMenuItem menuItemAddNewDFA = new JMenuItem(msg("NewDFA"));
+        JMenuItem menuItemAddNewPDA = new JMenuItem(msg("NewPDA"));
+        JMenuItem menuItemOpenNewDFA = new JMenuItem(msg("OpenDFA"));
+        JMenuItem menuItemOpenNewPDA = new JMenuItem(msg("OpenPDA"));
+        JMenuItem menuItemSave = new JMenuItem(msg("Save"));
+        JMenuItem menuItemSaveAs = new JMenuItem(msg("SaveAs"));
 
         // actions
         menuItemAddNewDFA.addActionListener(actionOpenNewDFAWindow);
@@ -154,7 +161,7 @@ public class TempFrame extends JFrame {
         setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         // main panel
-        JLabel welcomeLabel = new JLabel("Welcome");
+        JLabel welcomeLabel = new JLabel(msg("Welcome"));
 
         this.getContentPane().add(welcomeLabel);
         transitionMaking = false;
@@ -166,16 +173,27 @@ public class TempFrame extends JFrame {
     }
 
     /**
-     * Sets the title of the project. [*][filePath]AutomatonModeller 
+     * Function for i18n. Returns the correct string for language.
+     * 
+     * @param key The key of the string.
+     * @return String on the current language.
+     */
+    public String msg(String key) {
+        return Languages.msg(key);
+        // return controller.getMessages().getString(key);
+    }
+
+    /**
+     * Sets the title of the project. [*][filePath]AutomatonModeller
      * <ul>
-     *   <li> * : The project is not saved.
-     *   <li> filePath: The path of the project. Appears if it is a saved/opened project.
-     * </u>
+     * <li>* : The project is not saved.
+     * <li>filePath: The path of the project. Appears if it is a saved/opened
+     * project. </u>
      */
     private void setProjectTitle() {
         StringBuilder title = new StringBuilder();
-        if(controller.isSavedProject()){
-            if(!controller.isLatestSave()) {
+        if (controller.isSavedProject()) {
+            if (!controller.isLatestSave()) {
                 title.append("*");
             }
             title.append(controller.getFilePath());
@@ -186,7 +204,9 @@ public class TempFrame extends JFrame {
     }
 
     /**
-     * Make the modeller window with the modelling controller panel and the visualization panel.
+     * Make the modeller window with the modelling controller panel and the
+     * visualization panel.
+     * 
      * @param isDFA Is the type of the automaton DFA.
      */
     private void makeWindow(boolean isDFA) {
@@ -200,9 +220,9 @@ public class TempFrame extends JFrame {
 
         // popup menu for clicking an empty space
         emptySpacePopupMenu = new JPopupMenu();
-        JMenuItem simpleStateAdder = new JMenuItem("Add simple state");
-        JMenuItem startStateAdder = new JMenuItem("Add start state");
-        JMenuItem acceptStateAdder = new JMenuItem("Add accept state");
+        JMenuItem simpleStateAdder = new JMenuItem(msg("AddSimpleState"));
+        JMenuItem startStateAdder = new JMenuItem(msg("AddStartState"));
+        JMenuItem acceptStateAdder = new JMenuItem(msg("AddAcceptState"));
 
         // adding actions
         simpleStateAdder.addActionListener(actionMakeState);
@@ -216,10 +236,10 @@ public class TempFrame extends JFrame {
 
         // popup menu for clicking on a state
         statePopupMenu = new JPopupMenu();
-        JMenuItem transitionAdder = new JMenuItem("Add transition");
-        JMenuItem acceptStateSetter = new JMenuItem("Set to accept state");
-        JMenuItem startStateSetter = new JMenuItem("Set to start state");
-        JMenuItem stateDeleter = new JMenuItem("Delete state");
+        JMenuItem transitionAdder = new JMenuItem(msg("AddTransition"));
+        JMenuItem acceptStateSetter = new JMenuItem(msg("SetToAcceptState"));
+        JMenuItem startStateSetter = new JMenuItem(msg("SetToStartState"));
+        JMenuItem stateDeleter = new JMenuItem(msg("DeleteState"));
 
         // adding actions
         acceptStateSetter.addActionListener(actionSetToAcceptState);
@@ -254,44 +274,72 @@ public class TempFrame extends JFrame {
                         }
                     }
                 } else {
-                    // check needed
-
-                    if (controller.isDFA()) {
-                        String name = JOptionPane.showInputDialog("Transition:");
-                        char with = name.charAt(0);
-                        try {
-                            controller.makeDFATransition(clickedState, with, stateNear);
-                        } catch (KeyFromStateAlreadyExistsException e) {
-                            JOptionPane.showMessageDialog(TempFrame.this, e.getMessage(), "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                    if (SwingUtilities.isLeftMouseButton(me)) {
+                        if (stateNear == null) {
+                            JOptionPane.showMessageDialog(TempFrame.this, msg("NoStateNear"), msg("ErrorLabel"),
+                                    JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            try {
+                                
+                                
+                                if (controller.isDFA()) {
+                                    //  making dialog for transition
+                                    String name;
+                                    do{
+                                        name = JOptionPane.showInputDialog(msg("LetterForTransition"));
+                                        if(name != null ) {
+                                            if(name.length() == 1) {
+                                                
+                                                char with = name.charAt(0);
+                                                controller.makeDFATransition(clickedState, with, stateNear);
+                                            } else {
+                                                JOptionPane.showMessageDialog(TempFrame.this, msg("TransitionNotGoodFormat"), msg("ErrorLabel"),
+                                                JOptionPane.ERROR_MESSAGE);
+                                            }
+                                           
+                                        }
+                                    }while(name != null && name.length() != 1);
+                                   
+                                } else {
+                                    // addig transition
+                                    String name;
+                                    do{
+                                        name = JOptionPane.showInputDialog(msg("PDATransition"));
+                                        if(name != null) {
+                                            name = name.replace(" ", "");
+                                            if(name.matches("./.->.*")) {
+                                                String[] items = name.split("->");
+                                                String[] value = items[0].split("/");
+                                                char with = value[0].charAt(0);
+                                                char stackItem = value[1].charAt(0);
+                                                String stackString = "";
+                                                if (items.length == 2) {
+                                                    stackString = items[1];
+                                                }
+                                                controller.makePDATransition(clickedState, with, stackItem, stateNear, stackString);
+                                            } else {
+                                                JOptionPane.showMessageDialog(TempFrame.this, msg("TransitionNotGoodFormat"), msg("ErrorLabel"),
+                                                JOptionPane.ERROR_MESSAGE);
+                                            }
+                                        }
+                                    }while(name != null && !name.matches("./.->.*")  );
+                                }
+                                transitionMaking = false;
+                                setControllingPanelEnabled(true);
+                                getContentPane().repaint();
+                                setProjectTitle();
+                            } catch (Exception e) {
+                                JOptionPane.showMessageDialog(TempFrame.this, e.getMessage(), msg("ErrorLabel"),
+                                        JOptionPane.ERROR_MESSAGE);
+                            }
                            
                         }
-                        getContentPane().repaint();
                     } else {
-                        // addig transition
-                        String name = JOptionPane.showInputDialog("Transition:");
-                        String[] items = name.split("->");
-                        String[] value = items[0].split("/");
-                        char with = value[0].charAt(0);
-                        char stackItem = value[1].charAt(0);
-                        String stackString = "";
-                        if(items.length == 2) {
-                            stackString = items[1];
-                        }
+                        transitionMaking = false;
+                        setControllingPanelEnabled(true);
                         
-                        
-                        try {
-                            controller.makePDATransition(clickedState, with, stackItem, stateNear, stackString);
-                        } catch (Exception e) {
-                            JOptionPane.showMessageDialog(TempFrame.this, e.getMessage(), "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                            
-                        }
-                        getContentPane().repaint();
-                        setProjectTitle();
                     }
-                    
-                    transitionMaking = false;
+
                 }
 
             }
@@ -332,33 +380,36 @@ public class TempFrame extends JFrame {
         // viewPanel = controller.getView();
         controllingPanel = new JPanel(null);
         controllingPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        //controllingPanel.add(controllingLabel);
+        // controllingPanel.add(controllingLabel);
         controllingPanel.setPreferredSize(new Dimension(300, 400));
-        //JPanel runPanel = new JPanel(null);
-        //  buttons
-        JButton nextButton = new JButton("Next");
-        JButton runButton = new JButton("Run");
-        JButton stopButton = new JButton("Stop");
+        // JPanel runPanel = new JPanel(null);
+        // buttons
+        nextButton = new JButton(msg("Next"));
+        runButton = new JButton(msg("Run"));
+        stopButton = new JButton(msg("Stop"));
+        nextButton.setEnabled(false);
+        runButton.setEnabled(false);
+        stopButton.setEnabled(false);
         wordLabel = new JLabel();
-        JButton wordAdderButton = new JButton("Add new word");
+        JButton wordAdderButton = new JButton(msg("AddNewWord"));
         wordLabel.setBorder(BorderFactory.createLineBorder(Color.black));
-        speedSlider = new JSlider(JSlider.HORIZONTAL,1, 10, 1);
-        JLabel speedLabel = new JLabel("Speed");
-        
+        speedSlider = new JSlider(JSlider.HORIZONTAL, 1, 10, 1);
+        JLabel speedLabel = new JLabel(msg("Speed"));
+
         // options of the slider
         speedSlider.setMajorTickSpacing(1);
         speedSlider.setMinorTickSpacing(1);
         speedSlider.setPaintTrack(true);
         speedSlider.setPaintTicks(true);
         speedSlider.setPaintLabels(true);
+        speedSlider.setEnabled(false);
 
-        //  actions
+        // actions
         wordAdderButton.addActionListener(actionAddWord);
         nextButton.addActionListener(actionRead);
         runButton.addActionListener(actionRun);
         stopButton.addActionListener(actionStopRun);
         speedSlider.addChangeListener(actionSpeedChange);
-        
 
         // adding to panel
         controllingPanel.add(wordLabel);
@@ -368,29 +419,27 @@ public class TempFrame extends JFrame {
         controllingPanel.add(speedSlider);
         controllingPanel.add(wordAdderButton);
         controllingPanel.add(stopButton);
-        
-        //  bounds
-        speedSlider.setBounds (10, 290, 275, 50);
-        wordLabel.setBounds (10, 135, 280, 45);
-        speedLabel.setBounds (15, 255, 100, 25);
-        nextButton.setBounds (185, 365, 75, 25);
-        runButton.setBounds (35, 365, 80, 25);
-        wordAdderButton.setBounds (25, 200, 120, 25);
-        stopButton.setBounds (35, 400, 80, 25);
-        
 
-        //  stack settings
-        if(!controller.isDFA()) {
+        // bounds
+        speedSlider.setBounds(10, 290, 275, 50);
+        wordLabel.setBounds(10, 135, 280, 45);
+        speedLabel.setBounds(15, 255, 100, 25);
+        nextButton.setBounds(185, 365, 75, 25);
+        runButton.setBounds(35, 365, 80, 25);
+        wordAdderButton.setBounds(25, 200, 120, 25);
+        stopButton.setBounds(35, 400, 80, 25);
+
+        // stack settings
+        if (!controller.isDFA()) {
             stackLabel = new JLabel();
             drawStack();
             stackLabel.setBorder(BorderFactory.createLineBorder(Color.black));
             controllingPanel.add(stackLabel);
-            stackLabel.setBounds(100,550,100,200);
+            stackLabel.setBounds(100, 550, 100, 200);
         }
-       
-    
+
         this.getContentPane().add(viewPanel);
-        this.getContentPane().add(controllingPanel,BorderLayout.EAST);
+        this.getContentPane().add(controllingPanel, BorderLayout.EAST);
 
         this.repaint();
         this.revalidate();
@@ -405,6 +454,7 @@ public class TempFrame extends JFrame {
 
     /**
      * Check if the state moving is allowed.
+     * 
      * @return The state moving is allowed.
      */
     private synchronized boolean checkAndMark() {
@@ -416,6 +466,7 @@ public class TempFrame extends JFrame {
 
     /**
      * Moving the given state where the cursor is.
+     * 
      * @param state The movable state.
      */
     private void initThread(State state) {
@@ -423,9 +474,10 @@ public class TempFrame extends JFrame {
             new Thread() {
                 public void run() {
                     do {
-                       
+
                         try {
-                            controller.changePosition(state, MouseInfo.getPointerInfo().getLocation().getX(), MouseInfo.getPointerInfo().getLocation().getY());
+                            controller.changePosition(state, MouseInfo.getPointerInfo().getLocation().getX(),
+                                    MouseInfo.getPointerInfo().getLocation().getY());
                             getContentPane().repaint();
                             setProjectTitle();
                         } catch (Exception e) {
@@ -439,49 +491,67 @@ public class TempFrame extends JFrame {
         }
     }
 
-    /**
-     * Reading a char from input word and modifies the view. Check if the current state exists, if not shows error. If this was the last read check if the state is accepted or rejected.
-     * @throws MissingStartStateException There is no start state in the automaton.
-     * @throws StateNotFoundException A used state is not found.
-     */
-    private void charRead() throws MissingStartStateException, StateNotFoundException {
-        
-        controller.nextStepInReading();
-        
-        if(!controller.isDFA())
-            drawStack();
-        
-        if(controller.isCurrentStateRejectState()) {
-            JOptionPane.showMessageDialog(TempFrame.this, "Reject state! Word is not accepted", "Error", JOptionPane.ERROR_MESSAGE);
+    private void setControllingPanelEnabled(boolean enable) {
+        for (Component com : controllingPanel.getComponents()) {
+            if(com != nextButton && com != runButton && com != stopButton && com != speedSlider )
+                com.setEnabled(enable);
             
-            controller.reset();
-            inputReadRunning = false;
-            wordLabel.setText(controller.getColoredInputWord());
-            if(!controller.isDFA())
-                drawStack();  
-        } 
-        wordLabel.setText(controller.getColoredInputWord());
-        getContentPane().repaint();
-        if( controller.isLastLetter() ) {
-            if(controller.isCurrentStateAcceptState()) {
-                JOptionPane.showMessageDialog(TempFrame.this, "Given word is accepted", "Accepted", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(TempFrame.this, "Given word is not accepted", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-            
-            inputReadRunning = false;
-            controller.reset();
-            wordLabel.setText(controller.getColoredInputWord());
-            
-            if(!controller.isDFA())
-                drawStack();         
         }
-        
-        getContentPane().repaint();
-            
     }
 
-     /**
+    /**
+     * Reading a char from input word and modifies the view. Check if the current
+     * state exists, if not shows error. If this was the last read check if the
+     * state is accepted or rejected.
+     * 
+     * @throws MissingStartStateException There is no start state in the automaton.
+     * @throws StateNotFoundException     A used state is not found.
+     */
+    private void charRead() throws MissingStartStateException, StateNotFoundException {
+
+        controller.nextStepInReading();
+
+        if (!controller.isDFA())
+            drawStack();
+
+        if (controller.isCurrentStateRejectState()) {
+            JOptionPane.showMessageDialog(TempFrame.this, msg("RejectStateMsg"), msg("ErrorLabel"),
+                    JOptionPane.ERROR_MESSAGE);
+
+            controller.reset();
+            runButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            inputReadRunning = false;
+            wordLabel.setText(controller.getColoredInputWord());
+            if (!controller.isDFA())
+                drawStack();
+        }
+        wordLabel.setText(controller.getColoredInputWord());
+        getContentPane().repaint();
+        if (controller.isLastLetter()) {
+            if (controller.isCurrentStateAcceptState()) {
+                JOptionPane.showMessageDialog(TempFrame.this, msg("AcceptedMsg"), msg("AcceptedLabel"),
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(TempFrame.this, msg("NotAcceptedMsg"), msg("ErrorLabel"),
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+            inputReadRunning = false;
+            controller.reset();
+            runButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            wordLabel.setText(controller.getColoredInputWord());
+
+            if (!controller.isDFA())
+                drawStack();
+        }
+
+        getContentPane().repaint();
+
+    }
+
+    /**
      * Run of the reading with the speed of read by the speed slider.
      */
     private void runWithTimer() {
@@ -490,39 +560,36 @@ public class TempFrame extends JFrame {
 
             @Override
             public void run() {
-               
-                  
-                try{
-                    
-                    if(!inputReadRunning) {
+
+                try {
+
+                    if (!inputReadRunning) {
                         timer.cancel();
                         timer.purge();
                     } else {
-                        if(previousTime != t) {
+                        if (previousTime != t) {
                             previousTime = t;
                             timer.cancel();
                             runWithTimer();
                         }
 
                         charRead();
-                        
 
                     }
-                  
-                }catch(Exception e1) {
+
+                } catch (Exception e1) {
 
                 }
-                
-                }
-        }, 0, t*1000); 
+
+            }
+        }, 0, t * 1000);
     }
 
-    
-    //Actions
-
+    // Actions
 
     /**
-     * Action which opens a window where user can make a new DFAutomaton. An empty one or on from a regular expression.
+     * Action which opens a window where user can make a new DFAutomaton. An empty
+     * one or on from a regular expression.
      */
     private AbstractAction actionOpenNewDFAWindow = new AbstractAction() {
 
@@ -531,7 +598,7 @@ public class TempFrame extends JFrame {
 
             JDialog dialog = new JDialog(TempFrame.this);
             dialog.setLocationRelativeTo(TempFrame.this); // set location width/2 and height/2
-            dialog.setTitle("New DFA");
+            dialog.setTitle(msg("NewDFA"));
             dialog.setSize(300, 150);
 
             JPanel panel = new JPanel();
@@ -539,8 +606,8 @@ public class TempFrame extends JFrame {
 
             // radio panel
             JPanel radioPanel = new JPanel();
-            JRadioButton emptyAutomaton = new JRadioButton("Make empty Automaton");
-            JRadioButton regexpAutomaton = new JRadioButton("Make Automaton by regular expression");
+            JRadioButton emptyAutomaton = new JRadioButton(msg("MakeEmptyAutomaton"));
+            JRadioButton regexpAutomaton = new JRadioButton(msg("MakeAutomatonByRegex"));
             ButtonGroup group = new ButtonGroup();
             group.add(emptyAutomaton);
             group.add(regexpAutomaton);
@@ -552,10 +619,10 @@ public class TempFrame extends JFrame {
             JPanel regexpPanel = new JPanel();
             JTextField regexp = new JTextField(10);
             JLabel checkLabel = new JLabel();
-            Icon fineIcon = new ImageIcon(
-                    new ImageIcon("resources/regexp_fine.png").getImage().getScaledInstance(21, 21, Image.SCALE_DEFAULT));
-            Icon badIcon = new ImageIcon(
-                    new ImageIcon("resources/regexp_bad.png").getImage().getScaledInstance(21, 21, Image.SCALE_DEFAULT));
+            Icon fineIcon = new ImageIcon(new ImageIcon("resources/regexp_fine.png").getImage().getScaledInstance(21,
+                    21, Image.SCALE_DEFAULT));
+            Icon badIcon = new ImageIcon(new ImageIcon("resources/regexp_bad.png").getImage().getScaledInstance(21, 21,
+                    Image.SCALE_DEFAULT));
 
             regexp.getDocument().addDocumentListener(new DocumentListener() {
                 public void changedUpdate(DocumentEvent e) {
@@ -614,7 +681,7 @@ public class TempFrame extends JFrame {
             });
 
             // Generate button
-            JButton generateButton = new JButton("Generate");
+            JButton generateButton = new JButton(msg("Generate"));
             generateButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if (DFAsimple) {
@@ -626,7 +693,7 @@ public class TempFrame extends JFrame {
                     } else if (regexpCorrect) {
                         // majd
                     } else {
-                        JOptionPane.showMessageDialog(TempFrame.this, "Regular expression is not correct!", "Error",
+                        JOptionPane.showMessageDialog(TempFrame.this, msg("RegexIsNotCorrect"), msg("ErrorLabel"),
                                 JOptionPane.ERROR_MESSAGE);
                     }
 
@@ -645,7 +712,8 @@ public class TempFrame extends JFrame {
     };
 
     /**
-     * Action which opens a window where the user can make a PDAutomaton with a start symbol.
+     * Action which opens a window where the user can make a PDAutomaton with a
+     * start symbol.
      */
     private AbstractAction actionOpenNewPDAWindow = new AbstractAction() {
 
@@ -653,7 +721,7 @@ public class TempFrame extends JFrame {
         public void actionPerformed(ActionEvent e) {
             JDialog dialog = new JDialog(TempFrame.this);
             dialog.setLocationRelativeTo(TempFrame.this); // set location width/2 and height/2
-            dialog.setTitle("New PDA");
+            dialog.setTitle(msg("NewPDA"));
             dialog.setSize(200, 100);
 
             JPanel mainPanel = new JPanel();
@@ -661,7 +729,7 @@ public class TempFrame extends JFrame {
             // start symbol
             JPanel startSymbolPanel = new JPanel(new BorderLayout(8, 8));
 
-            JLabel startSymbolLabel = new JLabel("Start symbol:", JLabel.TRAILING);
+            JLabel startSymbolLabel = new JLabel(msg("StartSymbolLabel"), JLabel.TRAILING);
             startSymbolPanel.add(startSymbolLabel, BorderLayout.WEST);
             JTextField startSymbolText = new JTextField(2);
             startSymbolText.setHorizontalAlignment(JTextField.CENTER);
@@ -669,7 +737,7 @@ public class TempFrame extends JFrame {
             startSymbolPanel.add(startSymbolText, BorderLayout.EAST);
 
             // generate button
-            JButton generateButton = new JButton("Generate");
+            JButton generateButton = new JButton(msg("Generate"));
             generateButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if (startSymbolText.getText().length() == 1) {
@@ -680,8 +748,8 @@ public class TempFrame extends JFrame {
                         TempFrame.this.makeWindow(false);
                         setProjectTitle();
                     } else {
-                        JOptionPane.showMessageDialog(TempFrame.this, "Start symbol should be one character long!",
-                                "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(TempFrame.this, msg("StartSymbolNotOneCharLong"),
+                                msg("ErrorLabel"), JOptionPane.ERROR_MESSAGE);
                     }
                 }
             });
@@ -706,7 +774,7 @@ public class TempFrame extends JFrame {
                 JFileChooser fileChooser = new JFileChooser();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton projects (.amproj)", "amproj");
                 fileChooser.setFileFilter(filter);
-                fileChooser.setDialogTitle("Open DFA");
+                fileChooser.setDialogTitle(msg("OpenDFA"));
                 int returnValue = fileChooser.showOpenDialog(TempFrame.this);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     String filePath = fileChooser.getSelectedFile().getAbsolutePath();
@@ -714,15 +782,14 @@ public class TempFrame extends JFrame {
 
                     TempFrame.this.makeWindow(true);
                     setProjectTitle();
-                    
 
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), msg("ErrorLabel"),
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     };
-
 
     /**
      * Action which opens a window where the user can open a PDAutomaton from file.
@@ -735,7 +802,7 @@ public class TempFrame extends JFrame {
                 JFileChooser fileChooser = new JFileChooser();
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton projects (.amproj)", "amproj");
                 fileChooser.setFileFilter(filter);
-                fileChooser.setDialogTitle("Open PDA");
+                fileChooser.setDialogTitle(msg("OpenPDA"));
                 int returnValue = fileChooser.showOpenDialog(TempFrame.this);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     String filePath = fileChooser.getSelectedFile().getAbsolutePath();
@@ -745,7 +812,8 @@ public class TempFrame extends JFrame {
                     setProjectTitle();
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), msg("ErrorLabel"),
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     };
@@ -764,13 +832,13 @@ public class TempFrame extends JFrame {
                             "amproj");
                     fileChooser.setFileFilter(filter);
                     fileChooser.setSelectedFile(new File("untitled.amproj"));
-                    fileChooser.setDialogTitle("Save As");
+                    fileChooser.setDialogTitle(msg("SaveAs"));
                     int returnValue = fileChooser.showOpenDialog(TempFrame.this);
                     if (returnValue == JFileChooser.APPROVE_OPTION) {
                         File filePath = fileChooser.getSelectedFile();
                         if (filePath.exists()) {
-                            int n = JOptionPane.showConfirmDialog(TempFrame.this, "Do You Want to Overwrite File?",
-                                    "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
+                            int n = JOptionPane.showConfirmDialog(TempFrame.this, msg("OverwriteMsg"),
+                                    msg("OverWriteLabel"), JOptionPane.YES_NO_OPTION);
 
                             if (n == JOptionPane.YES_OPTION) {
                                 TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
@@ -780,7 +848,7 @@ public class TempFrame extends JFrame {
                         }
                     }
                 } else {
-                   
+
                     if (!TempFrame.this.controller.isLatestSave()) {
                         TempFrame.this.controller.save();
                     }
@@ -788,13 +856,15 @@ public class TempFrame extends JFrame {
                 }
                 setProjectTitle();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), msg("ErrorLabel"),
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     };
 
     /**
-     * Action which opens a window where the user can choose a file to save the current stage of the automaton.
+     * Action which opens a window where the user can choose a file to save the
+     * current stage of the automaton.
      */
     private AbstractAction actionSaveAs = new AbstractAction() {
 
@@ -805,13 +875,13 @@ public class TempFrame extends JFrame {
                 FileNameExtensionFilter filter = new FileNameExtensionFilter("Automaton projects (.amproj)", "amproj");
                 fileChooser.setFileFilter(filter);
                 fileChooser.setSelectedFile(new File("untitled.amproj"));
-                fileChooser.setDialogTitle("Save As");
+                fileChooser.setDialogTitle(msg("SaveAs"));
                 int returnValue = fileChooser.showOpenDialog(TempFrame.this);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     File filePath = fileChooser.getSelectedFile();
                     if (filePath.exists()) {
-                        int n = JOptionPane.showConfirmDialog(TempFrame.this, "Do You Want to Overwrite File?",
-                                "Confirm Overwrite", JOptionPane.YES_NO_OPTION);
+                        int n = JOptionPane.showConfirmDialog(TempFrame.this, msg("OverwriteMsg"),
+                                msg("OverWriteLabel"), JOptionPane.YES_NO_OPTION);
 
                         if (n == JOptionPane.YES_OPTION) {
                             TempFrame.this.controller.saveAs(filePath.getAbsolutePath());
@@ -822,7 +892,8 @@ public class TempFrame extends JFrame {
                 }
                 setProjectTitle();
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(TempFrame.this, ex.getMessage(), msg("ErrorLabel"),
+                        JOptionPane.ERROR_MESSAGE);
             }
 
         }
@@ -840,23 +911,25 @@ public class TempFrame extends JFrame {
             double y = TempFrame.this.clickPositionY;
             if (controller.canMakeState(x, y)) {
                 // add state
-                try { 
+                try {
                     // TODO: adding state
                     // draw tmp circle->get name
                     String name = JOptionPane.showInputDialog("Name:");
-                    controller.addState(name, x, y);  
-                    getContentPane().repaint();        
-                    //draw 
+                    controller.addState(name, x, y);
+                    getContentPane().repaint();
+                    // draw
                 } catch (StateAlreadyExistsException e1) {
-                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }  
+                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), msg("ErrorLabel"),
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
             setProjectTitle();
         }
     };
 
     /**
-     * Action to make an accept state where the clicked position is if it is possible.
+     * Action to make an accept state where the clicked position is if it is
+     * possible.
      */
     private AbstractAction actionMakeAcceptState = new AbstractAction() {
 
@@ -867,24 +940,25 @@ public class TempFrame extends JFrame {
             double y = TempFrame.this.clickPositionY;
             if (controller.canMakeState(x, y)) {
                 // add state
-                try { 
+                try {
                     // TODO: adding state
                     // draw tmp circle->get name
                     String name = JOptionPane.showInputDialog("Name:");
-                    controller.addAcceptState(name, x, y);  
-                    getContentPane().repaint();        
-                    //draw 
+                    controller.addAcceptState(name, x, y);
+                    getContentPane().repaint();
+                    // draw
                 } catch (StateAlreadyExistsException e1) {
-                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }  
+                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), msg("ErrorLabel"),
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
             setProjectTitle();
         }
     };
 
-       /**
-        * Action to make a start state where the clicked position is if it is possible.
-        */
+    /**
+     * Action to make a start state where the clicked position is if it is possible.
+     */
     private AbstractAction actionMakeStartState = new AbstractAction() {
 
         @Override
@@ -894,26 +968,29 @@ public class TempFrame extends JFrame {
             double y = TempFrame.this.clickPositionY;
             if (controller.canMakeState(x, y)) {
                 // add state
-                try { 
+                try {
                     // TODO: adding state
                     // draw tmp circle->get name
                     String name = JOptionPane.showInputDialog("Name:");
-                    controller.addStartState(name, x, y);  
-                    getContentPane().repaint();        
-                    //draw 
+                    controller.addStartState(name, x, y);
+                    getContentPane().repaint();
+                    // draw
                 } catch (StateAlreadyExistsException e1) {
-                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }  catch (StartStateAlreadyExistsException e2) {
-                    JOptionPane.showMessageDialog(TempFrame.this, e2.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), msg("ErrorLabel"),
+                            JOptionPane.ERROR_MESSAGE);
+                } catch (StartStateAlreadyExistsException e2) {
+                    JOptionPane.showMessageDialog(TempFrame.this, e2.getMessage(), msg("ErrorLabel"),
+                            JOptionPane.ERROR_MESSAGE);
                 }
             } else {
-                JOptionPane.showMessageDialog(TempFrame.this, "States can't interect each other!", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(TempFrame.this, msg("NoItersectMsg"), msg("ErrorLabel"),
+                        JOptionPane.ERROR_MESSAGE);
             }
             setProjectTitle();
         }
-        
+
     };
-    
+
     /**
      * Action to set the choosen state to accept state.
      */
@@ -921,9 +998,9 @@ public class TempFrame extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            
+
             clickedState.setAccepState(true);
-            
+
             getContentPane().repaint();
             setProjectTitle();
         }
@@ -936,9 +1013,9 @@ public class TempFrame extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            
+
             controller.deleteState(clickedState);
-            
+
             getContentPane().repaint();
             setProjectTitle();
         }
@@ -950,8 +1027,9 @@ public class TempFrame extends JFrame {
     private AbstractAction actionMakeTransition = new AbstractAction() {
 
         @Override
-        public void actionPerformed(ActionEvent e) { 
+        public void actionPerformed(ActionEvent e) {
             transitionMaking = true;
+            setControllingPanelEnabled(false);
         }
     };
 
@@ -963,10 +1041,15 @@ public class TempFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             
-            String input = JOptionPane.showInputDialog("Input word:");
+            String input = JOptionPane.showInputDialog(msg("InputWordLabel"));
+            nextButton.setEnabled(true);
+            runButton.setEnabled(true);
+            speedSlider.setEnabled(true);
             controller.addWordToRead(input);
             wordLabel.setText(controller.getColoredInputWord());
             controller.reset();
+            
+
             
         }
     };
@@ -982,7 +1065,7 @@ public class TempFrame extends JFrame {
                 charRead();
             } catch (Exception e1) {
 
-                JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(TempFrame.this, e1.getMessage(), msg("ErrorLabel"), JOptionPane.ERROR_MESSAGE);
             }
             
 
@@ -996,11 +1079,16 @@ public class TempFrame extends JFrame {
 
         @Override
         public void actionPerformed(ActionEvent e) { 
-            t = speedSlider.getValue();
-            previousTime = t;
-            startTime = System.currentTimeMillis();
-            inputReadRunning = true;
-            runWithTimer();
+            if(controller.getAutomaton().getCurrentState() != null){
+                stopButton.setEnabled(true);
+                runButton.setEnabled(false);
+                t = speedSlider.getValue();
+                previousTime = t;
+                startTime = System.currentTimeMillis();
+                inputReadRunning = true;
+                runWithTimer();
+            }
+           
             
         }
     };
@@ -1013,6 +1101,8 @@ public class TempFrame extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) { 
             inputReadRunning = false;
+            stopButton.setEnabled(false);
+            runButton.setEnabled(true);
         }
     };
 

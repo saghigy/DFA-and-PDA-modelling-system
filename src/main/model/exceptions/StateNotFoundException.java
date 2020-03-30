@@ -1,5 +1,7 @@
 package main.model.exceptions;
 
+import main.Languages;
+
 /**
  * StateNotFoundException
  */
@@ -7,7 +9,7 @@ public class StateNotFoundException extends Exception{
 
 
     public StateNotFoundException() {
-        super("No state found with this name");
+        super(Languages.msg("NoStateFoundWithThisName"));
     }
     
     
