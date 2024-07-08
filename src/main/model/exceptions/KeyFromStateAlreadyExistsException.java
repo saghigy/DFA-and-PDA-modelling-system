@@ -1,7 +1,7 @@
 package main.model.exceptions;
 
 import main.Languages;
-import main.model.State;
+import main.model.automaton.State;
 
 /**
  * KeyFromStateAlreadyExistsException

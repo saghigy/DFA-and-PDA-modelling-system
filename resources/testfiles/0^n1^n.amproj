@@ -1,0 +1,16 @@
+#AutomatonModeller-Model
+type : PDA
+startSymbol : Z
+states : [
+{"name":"q1","x":431,"y":214,"acceptState":false,"startState":false},
+{"name":"q0","x":254,"y":164,"acceptState":false,"startState":true},
+{"name":"q2","x":658,"y":214,"acceptState":false,"startState":false},
+{"name":"q4","x":816,"y":273,"acceptState":true,"startState":false}
+]
+transitions : [
+{ q2 ---------1 / 0---------> q2 / [] },
+{ q2 ---------# / Z---------> q4 / [Z] },
+{ q0 ---------0 / Z---------> q1 / [0, Z] },
+{ q1 ---------1 / 0---------> q2 / [] },
+{ q1 ---------0 / 0---------> q1 / [0, 0] }
+]

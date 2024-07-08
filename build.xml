@@ -42,6 +42,7 @@
         <javac  srcdir="${test.src.dir}" destdir="${test.build.dir}" includeantruntime="false">
             <classpath refid="classpath.test"/>
         </javac>
+
       </target>
 
     <target name="clean">
@@ -52,9 +53,8 @@
 
     <target name="jar" depends="compile">
         <mkdir dir="build/jar"/>
-        <mkdir dir="build/jar/resources"/>
-        <copydir dest="build/jar/resources" src="resources"></copydir>
-        <jar destfile="build/jar/AutomatonModeller.jar" basedir="${main.build.dir}">
+        <copydir dest="build/jar/AutomatonModeller/resources" src="resources"></copydir>
+        <jar destfile="build/jar/AutomatonModeller/AutomatonModeller.jar" basedir="${main.build.dir}">
             <zipgroupfileset dir="lib" includes="**/*.jar"/>
             <manifest>
                 <attribute name="Main-Class" value="main.Main"/>
@@ -63,7 +63,7 @@
     </target>
 
     <target name="run" depends="jar">
-        <java jar="build/jar/AutomatonModeller.jar" fork="true"/>
+        <java jar="build/jar/AutomatonModeller/AutomatonModeller.jar" fork="true"/>
             
        
            
@@ -75,7 +75,7 @@
                 <path refid="classpath.test"/>
                 <pathelement location="build/classes"/>
               </classpath>
-            <formatter type="brief" usefile="false" />
+            <formatter type="plain" usefile="false" />
             <batchtest>
                 <fileset dir="src" includes="**/*Test.java" />
             </batchtest>

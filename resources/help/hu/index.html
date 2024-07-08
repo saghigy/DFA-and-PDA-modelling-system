@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="hu">
+<meta charset="utf-8">
+<body style="margin-left: 10px; ">
+    <h1>Üdv a súgóban!</h1>
+   
+    <article>
+        <h1  name="new_proj">Új projekt készítése</h1>
+        <p>Egy új projekt készítéséhez ki kell választani a Fájl menüpontot és és kiválasztani a megfelelő automatát.</p>
+        <h2>Véges Determinisztikus Automata készítése</h2>
+        <p>VDA készítése közben létrehozhat üres, vagy reguláris kifejezésből előállított automata is. </p>
+        <ol>
+            <li><b>Üres automata:</b> Tartalom nélküli automata készítése</li>
+            <li>
+                <b>Automata reguláris kifejezésből:</b> Automata reguláis kifejezésből vaóelőállítása.
+                A reguláris kifejezéshez az alábbi karakterek használhatóak: *, ( , ) és sima karakterek.
+            </li>
+        </ol>
+        <img style="width:40%;height: 400px; " src="newDFA.gif">
+
+        <h2>Új Veremautomata készítése</h2>
+        <p>Veremautomata készítésekor csak üres automata hozható létre, azonban egy kezdő szimbólumot is meg kell adni.</p>
+        <img style="width:40%;height: 400px; " src="newPDA.gif">
+    </article>
+
+    <article>
+        <h1  name="open_proj">Létező projekt megnyitásat</h1>
+        <p>Egy projekt megnyitása a Fájl menüből az adott típusú automatára való kiválasztással érhető el.</p>
+        <h2>Véges Determinisztikus Automata megnyitása</h2>
+        <p>A DFA megnyitása menüpont kiválasztása után a fájl tallózásával érhető el. </p>
+        <h3>Fájl formátuma:</h3>
+        <div style="width:65%;">
+            <pre 
+            style = " background: #f4f4f4;
+                border: 1px solid #ddd;
+                color: #666;
+                page-break-inside: avoid;
+                font-family: monospace;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 1.6em;
+                max-width: 100%;
+                overflow: auto;
+                padding: 1em 1.5em;
+                display: block;
+                word-wrap: break-word;">
+            
+                #AutomatonController-Model
+                type : DFA
+                states : [
+                {"name":"&lt;név&gt;","x":&lt;x koordináta&gt;,y:&lt;y koordináta&gt;,"accceptState":&lt;elfogadó állapot-e&gt;,"startState:"&lt;kezdőállapot-e&gt;},
+                ...
+                ]
+                transitons : [
+                { &lt;kezdő állapot&gt; ---------&lt;átmeneti karakter&gt;---------&gt; &lt;vég állapot&gt; },
+                ...
+                ]
+            </pre>
+        </div>
+        <h4>Adattagok jelentése</h4>
+        <ul>
+            <li><b>type: </b> Az automata típusa (VDA ebben az esetben, úgyhogy DFA) </li>
+            <li><b>states: </b> Az állapotok listája, vesszővel elválasztva</li>
+            <li><b>transitons: </b> Az átmenetek listája, vesszővel elválasztva</li>
+        </ul>
+        <h4>Tag-ek jelentése</h4>
+        <ul>
+            <li><b>név:</b>  Az állapot neve</li>
+            <li><b>x koordináta:</b> Az állapot x koordinátája</li>
+            <li><b>y koordináta:</b> Az állapot y koordinátája</li>
+            <li><b>elfogadó állapot-e:</b> Az állapot elfogadóállapot-e </li>
+            <li><b>kezdőállapot-e:</b> Az állapot kezdőállapot-e  </li>
+            <li><b>kezdő állapot:</b> Az átmenet kezdő állapotának neve  </li>
+            <li><b>átmeneti karakter:</b> Az átmeneti karakter </li>
+            <li><b>vég állapot:</b> Az átmenet vég állapotának neve </li>
+        </ul>
+
+        <h2>Open a Pushdown Automaton</h2>
+        <p>Select Open PDA and found your own file. </p>
+        <h3>File format:</h3>
+        <div style="width:65%;">
+            <pre 
+            style = " background: #f4f4f4;
+                border: 1px solid #ddd;
+                color: #666;
+                page-break-inside: avoid;
+                font-family: monospace;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 1.6em;
+                max-width: 100%;
+                overflow: auto;
+                padding: 1em 1.5em;
+                display: block;
+                word-wrap: break-word;">
+            
+                #AutomatonModeller-Model
+                type : PDA
+                startSymbol : <start symbol>
+                states : [
+                {"name":"&lt;név&gt;","x":&lt;x koordináta&gt;,y:&lt;y koordináta&gt;,"accceptState":&lt;elfogadó állapot-e&gt;,"startState:"&lt;kezdőállapot-e&gt;},
+                ...
+                ]
+                transitions : [
+                { &lt;kezdő állapot&gt; ---------&lt;átmeneti karakter&gt; / &lt;veremből kiveendő karakter&gt;---------> &lt;vég állapot&gt; / [&lt;verembe beteendő karakterek&gt;] },
+                ...
+                ]
+            
+            </pre>
+        </div>
+        <h4>Adattagok jelentése</h4>
+        <ul>
+            <li><b>type: </b> The type of the automaton (DFA in this case)</li>
+            <li><b>states: </b> The list of states in the automaton, separated by commas</li>
+            <li><b>transitons: </b> The list of transitions in the automaton, separated by commas</li>
+        </ul>
+        <h4>Tag-ek jelentése</h4>
+        <ul>
+            <li><b>név:</b>  Az állapot neve</li>
+            <li><b>x koordináta:</b> Az állapot x koordinátája</li>
+            <li><b>y koordináta:</b> Az állapot y koordinátája</li>
+            <li><b>elfogadó állapot-e:</b> Az állapot elfogadóállapot-e </li>
+            <li><b>kezdőállapot-e:</b> Az állapot kezdőállapot-e  </li>
+            <li><b>kezdő állapot:</b> Az átmenet kezdő állapotának neve  </li>
+            <li><b>átmeneti karakter:</b> Az átmeneti karakter </li>
+            <li><b>veremből kiveendő karakter:</b> A karakter, melyet ki kell venni a veremből olvasás előtt</li>
+            <li><b>vég állapot:</b> Az átmenet vég állapotának neve </li>
+            <li><b>verembe beteendő karakterek:</b> A karaktersorozat, melyet be kell rakni a verembe az olvasás után</li>
+
+        </ul>
+    </article>
+
+    <article>
+        <h1  name="use_states">Állapotok használata</h1>
+        <p>Ez a fejezet arról szól, hogy hogyan használhatóak az állapotok</p>
+        <h2>Állapotok típusai</h2>
+        <h3>Sima állapot</h3>
+        <div >
+            <p >A sima állapot csak névvel rendelkezik</p>
+            <img style="width: 80px;" src="simple_state.png" >
+        </div>
+        <h3>Elfogadó állapot</h3>
+        <div>
+            <p  >Az elfogadóállapot rendelkezik egy névvel. Ha az olvasás itt ér véget, elfogadja az olvasott szót.</p>
+            <img style="width: 80px;" src="accept_state.png" >
+        </div>
+        <h3>Kezdő állapot</h3>
+        <div>
+            <p >A kezdő állapot rendelkezik egy névvel.Minden olvasás innen kezdődik</p>
+            <img style="width: 80px;" src="start_state.png" >
+        </div>
+
+        <h2>Új állapot készítése</h2>
+        <p>Egy új állapot készítéséhez a jobb-klikk segítségével előugró menüből érhetőel, a megfelelő típust kiválasztva.</p>
+        <div style="width: 100%; height:280px">
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Sima állapot</h3>
+                <img style="width: 100%; height: 220px;" src="newSimpleState.gif">
+            </div>
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Elfogadó állapot</h3>
+                <img style="width: 100%; height: 220px;" src="newAcceptState.gif">
+            </div>
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Kezdő állapot</h3>
+                <img style="width: 100%; height: 220px;" src="newStartState.gif">
+            </div>
+        </div>
+
+        <h2>Állapotok törlése</h2>
+        <p>Az állapotok törlése a jobb-klikkel felugró ablak Állapot törlése menüpontjával érhető el </p>
+        <img src="deleteState.gif">
+        
+        <h2>Egy állapot típusának átváltoztatása</h2>
+        <p>Egy állapot típusa átváltoztatható elfogadó és/vagy kezdőállapottá. Elfogadó állapotból bármennyi lehet, azonban kezdőállapotból csak egy.</p>
+        <div style="width: 100%; height:280px">
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Elfogadó állapottá tevés</h3>
+                <img style="width: 100%; height: 220px;" src="setToAcceptState.gif">
+            </div>
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Kezdőállapottá tevés</h3>
+                <img style="width: 100%; height: 220px;" src="setToStartState.gif">
+            </div>
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Második kezdőállapot</h3>
+                <img style="width: 100%; height: 220px;" src="setToStartStateError.gif">
+            </div>
+        </div>
+    </article>
+
+    <article>
+        <h1  name="make_transitions">Átmenetek készítése</h1>
+        <p>Az átmenetek készítése a jobb-klikkre felugró menüből érhető el. Két típusú állapotátmenet van, az automata/projekt típusától függően.</p>
+        <h2>Átmenetek Véges Determinisztikus Automatákhoz</h2>
+        <p>VDA átmenet készítéséhez egy állapotra való jobb klikk után az Állapot hozzáadása menüpontot kell választani. Ezután egy állapotra való kattintás után megtörténik az átmenet végállapotának kiválasztása. A felugró ablakban meg kell adni az átmeneti karaktert, majd el is készül az átmenet.</p>
+        <img src="addDFATransition.gif">
+
+        <h2>Átmenetek Veremautomatákhoz</h2>
+        <p>Veremautomata átmenet készítéséhez egy állapotra való jobb klikk után az Állapot hozzáadása menüpontot kell választani. Ezután egy állapotra való kattintás után megtörténik az átmenet végállapotának kiválasztása. A felugró ablakban meg kell adni az átmeneti karaktert, a veremből kiveendő karakter, és a verembe beteendő karaktereket, majd el is készül az átmenet.</p>
+        <h3>Megfelelő szintaxis</h3>
+        <h4>[átmeneti karakter]/[veremből kiveendő karakter]->[verembe beteendő karakterek] </h4>
+        <img src="addPDATransition.gif">
+    </article>
+
+    <article>
+        <h1  name="read_input">Input szavak olvasása</h1>
+        <p>Az program segítségével input szavak olvashatók az automatákon, és megnézhető, hogy az adott szó elfogadja, vagy elutasítja az automata. Ehhez az irányító panel használható a program bal oldalán.</p>
+        <h2>Új szó hozzáadása</h2>
+        <p>Egy új szó hozzáadásához az Új szó hozzáadása gombot kell lenyomni, majd beírni a kívánt szót.</p>
+        <img style="width: 80%;" src="addNewWord.gif">
+        <h2>Egy karakter olvasása</h2>
+        <p>Egy karakter olvasásához a Következő gombot kell lenyomni. Egz elolvassa a következő karakter, és átmozgatja az automatát az olvasás utáni állapotnak megfelelően.</p>
+        <img  src="readNextChar.gif">
+        <h2>Teljes szó olvasása</h2>
+        <p>Egy teljes szó olvassása a Futtatás gomb segítségével érhető el.Ez végigmegy az összes betűn és a Következő gomb ulajdonságának megflelő eseményt hajt végre. Az utolsó karakter olvasása után a program eldönti, hogy az adott szó elfogadott-e vagy sem.</p>
+        <img width="60%" src="runReading.gif">
+        <p>Az olvasás sebessége változtatható a csúszka segítségével.</p>
+        <img src="slider.png">
+        <h2>Az olvasás leállítása</h2>
+        <p>Az olvasás a Stop gomb segítségével állítható meg.</p>
+        <img src="stopReading.gif">
+        <h2>Lépésenkéni olvasás Veremautomaták esetén</h2>
+        <p>A lépésenkénti olvasás beállítható a Lépésenként címke mellet elhelyezkedő bepipálható elem bepipálásával.</p>
+        <p>Ez azt jelenti, hogy azolvasás három részre osztóik:</p>
+        <ul>
+            <li><b>POP:</b> A legfelső elem kivétele a veremből.</li>
+            <li><b>READ:</b>A következő karakter elolvasása, és az automata mozgatása</li>
+            <li><b>PUSH:</b> A megadott elemek behelyezése a verembe.</li>
+        </ul>
+        <img src="stepByStepReading.gif">
+    </article>
+</body>
+</html>

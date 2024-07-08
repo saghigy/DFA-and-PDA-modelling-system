@@ -6,7 +6,7 @@ import java.util.ResourceBundle;
 /**
  * Languages
  */
-public class Languages {
+public class Languages  {
 
     public static String language;
     public static String region;

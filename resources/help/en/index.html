@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+
+<body style="margin-left: 10px;  ">
+    <h1>Welcome to general help!</h1>
+   
+    <article>
+        <h1 id="new_proj" name="new_proj" >Making new project</h1>
+        <p>To make a new project you should choose the menu point File and choose the type of automaton you want to make.</p>
+        <h2>Making new Deterministic Finite Automaton automaton</h2>
+        <p>If you are making a DFA you can choose if you want to make an empty automaton or make one from a regular expression </p>
+        <ol>
+            <li><b>Empty automaton:</b> Make an automaton with no content at all.</li>
+            <li>
+                <b>Automaton from regular expression:</b> Make an automaton from a regular expression given.
+                Using this option you can only use the operators such as: *, ( , ) and plain characters.
+                
+            </li>
+        </ol>
+        <img style="width:40%;height: 400px; " src="newDFA.gif">
+
+        <h2>Making a new Pushdown Automaton</h2>
+        <p>If you are making a PDA you can use only an empty one. However, you have to choose a starting symbol.</p>
+        <img style="width:40%;height: 400px; " src="newPDA.gif">
+    </article>
+
+    <article>
+        <h1  name="open_proj">Open an existing project</h1>
+        <p>To open an existing project you should choose the menu point File and choose the type of automaton you want to open.</p>
+        <h2>Open a Deterministic Finite Automaton</h2>
+        <p>Select Open DFA and found your own file. </p>
+        <h3>File format:</h3>
+        <div style="width:65%;">
+            <pre 
+            style = " background: #f4f4f4;
+                border: 1px solid #ddd;
+                color: #666;
+                page-break-inside: avoid;
+                font-family: monospace;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 1.6em;
+                max-width: 100%;
+                overflow: auto;
+                padding: 1em 1.5em;
+                display: block;
+                word-wrap: break-word;">
+            
+                #AutomatonController-Model
+                type : DFA
+                states : [
+                {"name":"&lt;name&gt;","x":&lt;x coordinate&gt;,y:&lt;y coordinate&gt;,"accceptState":&lt;is accept state&gt;,"startState:"&lt;is start state&gt;},
+                ...
+                ]
+                transitons : [
+                { &lt;start state&gt; ---------&lt;transition character&gt;---------&gt; &lt;end state&gt; },
+                ...
+                ]
+            </pre>
+        </div>
+        <h4>Meanings of the members</h4>
+        <ul>
+            <li><b>type: </b> The type of the automaton (DFA in this case)</li>
+            <li><b>states: </b> The list of states in the automaton, separated by commas</li>
+            <li><b>transitons: </b> The list of transitions in the automaton, separated by commas</li>
+        </ul>
+        <h4>Meanings of the tags</h4>
+        <ul>
+            <li><b>name:</b>  The name of the state</li>
+            <li><b>x coordinate:</b> The x coordinate of the state</li>
+            <li><b>y coordinate:</b> The y coordinate of the state</li>
+            <li><b>is accept state:</b> Is the state accept state </li>
+            <li><b>is start state:</b> Is the state start state  </li>
+            <li><b>start state:</b> The name of the start state of the transition  </li>
+            <li><b>transition character:</b> The charachter of the transition </li>
+            <li><b>end state:</b> The name of the end state of the transition </li>
+        </ul>
+
+        <h2>Open a Pushdown Automaton</h2>
+        <p>Select Open PDA and found your own file. </p>
+        <h3>File format:</h3>
+        <div style="width:65%;">
+            <pre 
+            style = " background: #f4f4f4;
+                border: 1px solid #ddd;
+                color: #666;
+                page-break-inside: avoid;
+                font-family: monospace;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 1.6em;
+                max-width: 100%;
+                overflow: auto;
+                padding: 1em 1.5em;
+                display: block;
+                word-wrap: break-word;">
+            
+                #AutomatonModeller-Model
+                type : PDA
+                startSymbol : <start symbol>
+                states : [
+                {"name":"&lt;name&gt;","x":&lt;x coordinate&gt;,y:&lt;y coordinate&gt;,"accceptState":&lt;is accept state&gt;,"startState:"&lt;is start state&gt;},
+                ...
+                ]
+                transitions : [
+                { &lt;tstart state&gt; ---------&lt;lttransition characte&gt; / &lt;popped item from stack&gt;---------> &lt;end state&gt; / [&lt;pushed items to stack&gt;] },
+                ...
+                ]
+            
+            </pre>
+        </div>
+        <h4>Meanings of the members</h4>
+        <ul>
+            <li><b>type: </b> The type of the automaton (DFA in this case)</li>
+            <li><b>states: </b> The list of states in the automaton, separated by commas</li>
+            <li><b>transitons: </b> The list of transitions in the automaton, separated by commas</li>
+        </ul>
+        <h4>Meanings of the tags</h4>
+        <ul>
+            <li><b>name:</b>  The name of the state</li>
+            <li><b>x coordinate:</b> The x coordinate of the state</li>
+            <li><b>y coordinate:</b> The y coordinate of the state</li>
+            <li><b>is accept state:</b> Is the state accept state </li>
+            <li><b>is start state:</b> Is the state start state  </li>
+            <li><b>start state:</b> The name of the start state of the transition  </li>
+            <li><b>transition character:</b> The charachter of the transition </li>
+            <li><b>popped item from stack:</b> The item need to be popped from stack </li>
+            <li><b>end state:</b> The name of the end state of the transition </li>
+            <li><b>pushed items to stack:</b> The items need to be pushed into the stack </li>
+
+        </ul>
+    </article>
+
+    <article>
+        <h1  name="use_states">Using of states</h1>
+        <p>This chapter is about how to make and use states</p>
+        <h2>Type of states</h2>
+        <h3>Simple state</h3>
+        <div>
+            <p >A simple state has a name but no other specialities</p>
+            <img src="simple_state.png" >
+        </div>
+        <h3>Accept state</h3>
+        <div>
+            <p  >An accept state has a name, it accepts a word if the reading ends here</p>
+            <img  src="accept_state.png" >
+        </div>
+        <h3>Start state</h3>
+        <div>
+            <p  >A start state has a name, the reading is starting from here</p>
+            <img  src="start_state.png" >
+        </div>
+
+        <h2>Making a new state</h2>
+        <p>To make a new state you have to right-click on the screen and choose the right option, and add a name. </p>
+        <div style="width: 100%; height:280px">
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Simple state</h3>
+                <img style="width: 100%; height: 220px;" src="newSimpleState.gif">
+            </div>
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Accept state</h3>
+                <img style="width: 100%; height: 220px;" src="newAcceptState.gif">
+            </div>
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Start state</h3>
+                <img style="width: 100%; height: 220px;" src="newStartState.gif">
+            </div>
+        </div>
+
+        <h2>Deleting states</h2>
+        <p>To delete a state use right-click and choose </p>
+        <img src="deleteState.gif">
+        
+        <h2>Changing the type of a state</h2>
+        <p>You can change the type of a state to accept or/and start state. There can be limitless accept state but only one start state.</p>
+        <div style="width: 100%; height:280px">
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>State to accept state</h3>
+                <img style="width: 100%; height: 220px;" src="setToAcceptState.gif">
+            </div>
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>State to start state</h3>
+                <img style="width: 100%; height: 220px;" src="setToStartState.gif">
+            </div>
+            <div style="float:left; width: 25%; margin-right: 1%;">
+                <h3>Another start state</h3>
+                <img style="width: 100%; height: 220px;" src="setToStartStateError.gif">
+            </div>
+        </div>
+    </article>
+
+    <article>
+        <h1  name="make_transitions">Make transitions</h1>
+        <p>You can make transitions between states using the right-click menu. There are two types of transitions according to the type of the automaton.</p>
+        <h2>Transition for Deterministic Finite Automatons</h2>
+        <p>To make a DFA transition you have to click on a state and choose Add transition, after you have to choose the next state for the transition. Then you have to give the transition character between the two elements.</p>
+        <img src="addDFATransition.gif">
+
+        <h2>Transition for Pushdown Automatons</h2>
+        <p>To make a PDA transition you have to click on a state and choose Add transition, after you have to choose the next state for the transition. Then you have to give the transition character between the two elements, the character that needs to be popped from the stack, and the array of characters that need to be pushed in the stack.</p>
+        <h3>Right syntax</h3>
+        <h4>[transition character]/[char needs to be popped from stack]->[chars need to be pushed in the stack] </h4>
+        <img src="addPDATransition.gif">
+    </article>
+
+    <article>
+        <h1  name="read_input">Reading input words</h1>
+        <p>You can use an automaton to read given input words and calculate if the given word is accepted or not. For this you can use the controlling panel on the left of a project.</p>
+        <h2>Add a new word to read</h2>
+        <p>To add a new word select Add new word option and write in the desired word</p>
+        <img style="width: 80%;" src="addNewWord.gif">
+        <h2>Reading a character</h2>
+        <p>To read one character of an input word you should use the Next button. It reads the next character and modifies the automaton showing the current state and the used transition.</p>
+        <img  src="readNextChar.gif">
+        <h2>Reading a complete word</h2>
+        <p>You can read a whole word with using the buton Run. It's iterating through a word and use the same function as next. After reading the last character's a message informs you if the given word is accepted or nor.</p>
+        <img width="60%" src="runReading.gif">
+        <p>You can set the speed of the reading with the slider.</p>
+        <img src="slider.png">
+        <h2>Stop running of reading</h2>
+        <p>If you started the reading of a word you can stop it with the button Stop.</p>
+        <img src="stopReading.gif">
+        <h2>Step by step reading for Pushdown Automatons</h2>
+        <p>You can read word with a Pushdown automaton in step by step mode using the chackbox with the label: Step by step.</p>
+        <p>It means the reading is divided to three parts:</p>
+        <ul>
+            <li><b>POP:</b> Poping of the first item of the stack.</li>
+            <li><b>READ:</b> Reading of the next character and move the automaton to the current state.</li>
+            <li><b>PUSH:</b> Pushing the given items one by one</li>
+        </ul>
+        <img src="stepByStepReading.gif">
+    </article>
+</body>
+</html>

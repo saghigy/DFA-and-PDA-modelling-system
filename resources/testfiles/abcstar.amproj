@@ -1,0 +1,12 @@
+#AutomatonModeller-Model
+type : DFA
+states : [
+{"name":"S","x":100,"y":100,"acceptState":true,"startState":true},
+{"name":"0","x":200,"y":200,"acceptState":false,"startState":false},
+{"name":"1","x":300,"y":200,"acceptState":false,"startState":false}
+]
+transitions : [
+{ S ---------a---------> 0 },
+{ 0 ---------b---------> 1 },
+{ 1 ---------c---------> S }
+]
